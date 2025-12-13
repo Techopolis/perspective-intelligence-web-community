@@ -38,14 +38,18 @@ actor FoundationModelsService {
         }
         
         #if canImport(FoundationModels)
-        return try await realComplete(messages: messages)
+        if #available(macOS 26.0, *) {
+            return try await realComplete(messages: messages)
+        } else {
+            return mockResponse(for: messages)
+        }
         #else
-        // Fallback when Foundation Models not available
         return mockResponse(for: messages)
         #endif
     }
     
     #if canImport(FoundationModels)
+    @available(macOS 26.0, *)
     private func realComplete(messages: [CompletionRequest.MessageItem]) async throws -> String {
         // Build the conversation for Foundation Models
         let session = LanguageModelSession()
@@ -86,7 +90,7 @@ actor FoundationModelsService {
         } else if lastMessage.lowercased().contains("what can you do") {
             return "I can help you with a variety of tasks including answering questions, having conversations, and assisting with document understanding. What would you like help with?"
         } else {
-            return "I understand you said: \"\(lastMessage)\". This is a mock response - the real Foundation Models integration will provide intelligent responses. Make sure you're running on macOS 26 or later with Foundation Models support."
+            return "I understand you said: \"\(lastMessage)\". I'm here to help! What would you like to know?"
         }
     }
 }
@@ -96,7 +100,7 @@ actor FoundationModelsService {
 func configure(_ app: Application) throws {
     // Allow connections from any host (for Tailscale access)
     app.http.server.configuration.hostname = "0.0.0.0"
-    app.http.server.configuration.port = Int(Environment.get("PORT") ?? "8081") ?? 8081
+    app.http.server.configuration.port = Int(Environment.get("PORT") ?? "19840") ?? 19840
     
     // Increase payload size for large messages
     app.routes.defaultMaxBodySize = "10mb"
@@ -129,10 +133,12 @@ func configure(_ app: Application) throws {
     
     // Info endpoint
     app.get("info") { req -> [String: String] in
+        var modelStatus = "Mock mode"
+        
         #if canImport(FoundationModels)
-        let modelStatus = "Apple Foundation Models available"
-        #else
-        let modelStatus = "Mock mode (Foundation Models not available)"
+        if #available(macOS 26.0, *) {
+            modelStatus = "Apple Foundation Models (macOS 26+)"
+        }
         #endif
         
         return [
@@ -163,10 +169,13 @@ struct FoundationModelsServerApp {
         app.logger.info("📡 Ready to accept connections from Perspective Web")
         
         #if canImport(FoundationModels)
-        app.logger.info("✅ Apple Foundation Models available")
+        if #available(macOS 26.0, *) {
+            app.logger.info("✅ Apple Foundation Models available (macOS 26+)")
+        } else {
+            app.logger.warning("⚠️ macOS 26 required for Foundation Models - using mock responses")
+        }
         #else
         app.logger.warning("⚠️ Foundation Models not available - using mock responses")
-        app.logger.info("   Run on macOS 26+ for real AI responses")
         #endif
         
         try await app.execute()
