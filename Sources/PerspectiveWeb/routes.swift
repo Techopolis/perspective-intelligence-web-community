@@ -17,80 +17,102 @@ struct ChatViewContext: Content {
 }
 
 func routes(_ app: Application) throws {
-    // Public routes (no auth required)
-    
-    // Login page
-    app.get("login") { req async throws -> View in
-        // If already logged in, redirect to main app
-        if req.auth.has(User.self) {
-            throw Abort.redirect(to: "/")
-        }
-        
-        // Generate state for CSRF protection
-        let state = UUID().uuidString
-        req.session.data["auth_state"] = state
-        
-        let loginURL = req.auth0Config.authorizationURL(state: state)
-        
-        return try await req.view.render("login", ["loginURL": loginURL])
-    }
-    
-    // Logout
-    app.get("logout") { req async throws -> Response in
-        req.auth.logout(User.self)
-        req.session.destroy()
-        
-        let logoutURL = req.auth0Config.logoutRedirectURL()
-        return req.redirect(to: logoutURL)
-    }
+    // ============================================
+    // DEMO MODE - Set to false to require login
+    // ============================================
+    let demoMode = true
     
     // Health check endpoint (public)
     app.get("health") { req async -> HTTPStatus in
         .ok
     }
     
-    // Auth callback routes
-    try app.register(collection: AuthController())
-    
-    // Protected routes (require authentication)
-    let protected = app.grouped(UserSessionAuthenticator())
-        .grouped(AuthMiddleware())
-        .grouped(OnboardingMiddleware())
-    
-    // Main chat page
-    protected.get { req async throws -> View in
-        let user = try req.auth.require(User.self)
-        let context = ChatViewContext(includeChat: true, userName: user.name, chatID: nil)
-        return try await req.view.render("index", context)
-    }
-    
-    // Chat view for specific chat
-    protected.get("chat", ":chatID") { req async throws -> View in
-        guard let chatID = req.parameters.get("chatID", as: UUID.self) else {
-            throw Abort(.badRequest)
+    if demoMode {
+        // ============================================
+        // DEMO MODE ROUTES - No authentication required
+        // ============================================
+        
+        // Main chat page (demo)
+        app.get { req async throws -> View in
+            let context = ChatViewContext(includeChat: true, userName: "Demo User", chatID: nil)
+            return try await req.view.render("index", context)
         }
         
-        let user = try req.auth.require(User.self)
-        
-        // Verify chat belongs to user
-        guard let chat = try await Chat.find(chatID, on: req.db),
-              chat.$user.id == user.id else {
-            throw Abort(.notFound)
+        // Chat view for specific chat (demo)
+        app.get("chat", ":chatID") { req async throws -> View in
+            guard let chatID = req.parameters.get("chatID", as: UUID.self) else {
+                throw Abort(.badRequest)
+            }
+            let context = ChatViewContext(includeChat: true, userName: "Demo User", chatID: chatID.uuidString)
+            return try await req.view.render("index", context)
         }
         
-        let context = ChatViewContext(includeChat: true, userName: user.name, chatID: chatID.uuidString)
-        return try await req.view.render("index", context)
+        // API routes (demo - no user filtering)
+        try app.register(collection: DemoChatController())
+        try app.register(collection: DemoMessageController())
+        
+    } else {
+        // ============================================
+        // PRODUCTION ROUTES - Authentication required
+        // ============================================
+        
+        // Login page
+        app.get("login") { req async throws -> View in
+            if req.auth.has(User.self) {
+                throw Abort.redirect(to: "/")
+            }
+            let state = UUID().uuidString
+            req.session.data["auth_state"] = state
+            let loginURL = req.auth0Config.authorizationURL(state: state)
+            return try await req.view.render("login", ["loginURL": loginURL])
+        }
+        
+        // Logout
+        app.get("logout") { req async throws -> Response in
+            req.auth.logout(User.self)
+            req.session.destroy()
+            let logoutURL = req.auth0Config.logoutRedirectURL()
+            return req.redirect(to: logoutURL)
+        }
+        
+        // Auth callback routes
+        try app.register(collection: AuthController())
+        
+        // Protected routes
+        let protected = app.grouped(UserSessionAuthenticator())
+            .grouped(AuthMiddleware())
+            .grouped(OnboardingMiddleware())
+        
+        // Main chat page
+        protected.get { req async throws -> View in
+            let user = try req.auth.require(User.self)
+            let context = ChatViewContext(includeChat: true, userName: user.name, chatID: nil)
+            return try await req.view.render("index", context)
+        }
+        
+        // Chat view for specific chat
+        protected.get("chat", ":chatID") { req async throws -> View in
+            guard let chatID = req.parameters.get("chatID", as: UUID.self) else {
+                throw Abort(.badRequest)
+            }
+            let user = try req.auth.require(User.self)
+            guard let chat = try await Chat.find(chatID, on: req.db),
+                  chat.$user.id == user.id else {
+                throw Abort(.notFound)
+            }
+            let context = ChatViewContext(includeChat: true, userName: user.name, chatID: chatID.uuidString)
+            return try await req.view.render("index", context)
+        }
+        
+        // Onboarding routes
+        let authOnly = app.grouped(UserSessionAuthenticator())
+            .grouped(AuthMiddleware())
+        try authOnly.register(collection: OnboardingController())
+        
+        // API routes (protected)
+        try protected.register(collection: ChatController())
+        try protected.register(collection: MessageController())
     }
-    
-    // Onboarding routes (auth required but not onboarding check)
-    let authOnly = app.grouped(UserSessionAuthenticator())
-        .grouped(AuthMiddleware())
-    
-    try authOnly.register(collection: OnboardingController())
-    
-    // API routes (protected)
-    try protected.register(collection: ChatController())
-    try protected.register(collection: MessageController())
     
     // WebSocket for streaming (protected)
     protected.webSocket("ws", "chat", ":chatID") { req, ws async in
