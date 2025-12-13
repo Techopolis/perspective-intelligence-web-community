@@ -75,7 +75,11 @@ struct MessageController: RouteCollection {
             .all()
         
         // Call Foundation Models via Mac server
-        let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
+        // Add system prompt at the beginning
+        var messageHistory: [(role: String, content: String)] = [
+            (role: "system", content: "You are a helpful AI assistant. Answer questions directly in conversation. DO NOT use file system tools (read_file, write_file, etc.) unless the user explicitly asks you to read or write a specific file. For general questions and conversation, just respond normally without using any tools.")
+        ]
+        messageHistory.append(contentsOf: allMessages.map { (role: $0.role, content: $0.content) })
         
         let aiResponse: String
         do {

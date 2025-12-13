@@ -6,7 +6,7 @@ actor FoundationModelsClient {
     private let serverURL: String
     private let model: String
     
-    init(client: Client, serverURL: String = "http://michaels-mbp:11435", model: String = "llama3.2") {
+    init(client: Client, serverURL: String = "http://michaels-mbp:11435", model: String = "apple.local:latest") {
         self.client = client
         self.serverURL = serverURL
         self.model = model
@@ -103,7 +103,7 @@ extension Request {
         .init(
             client: self.client,
             serverURL: Environment.get("OLLAMA_URL") ?? "http://michaels-mbp:11435",
-            model: Environment.get("OLLAMA_MODEL") ?? "llama3.2"
+            model: Environment.get("OLLAMA_MODEL") ?? "apple.local:latest"
         )
     }
 }

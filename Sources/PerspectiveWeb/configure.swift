@@ -37,7 +37,7 @@ public func configure(_ app: Application) async throws {
     app.logger.info("Auth0 Domain: \(app.auth0Config.domain)")
     
     let ollamaURL = Environment.get("OLLAMA_URL") ?? "http://michaels-mbp:11435"
-    let ollamaModel = Environment.get("OLLAMA_MODEL") ?? "llama3.2"
+    let ollamaModel = Environment.get("OLLAMA_MODEL") ?? "apple.local:latest"
     
     if Environment.get("OLLAMA_URL") == nil {
         app.logger.warning("OLLAMA_URL not set - using default: \(ollamaURL)")
