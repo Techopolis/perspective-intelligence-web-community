@@ -36,7 +36,7 @@ public func configure(_ app: Application) async throws {
     app.logger.info("Perspective Web starting...")
     app.logger.info("Auth0 Domain: \(app.auth0Config.domain)")
     
-    let ollamaURL = Environment.get("OLLAMA_URL") ?? "http://localhost:11434"
+    let ollamaURL = Environment.get("OLLAMA_URL") ?? "http://michaels-mbp:11435"
     let ollamaModel = Environment.get("OLLAMA_MODEL") ?? "llama3.2"
     
     if Environment.get("OLLAMA_URL") == nil {
