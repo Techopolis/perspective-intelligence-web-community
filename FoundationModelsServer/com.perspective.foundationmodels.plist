@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.perspective.foundationmodels</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <!-- UPDATE THIS PATH to where you installed the server -->
+        <string>/Users/michael/FoundationModelsServer/.build/release/FoundationModelsServer</string>
+    </array>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PORT</key>
+        <string>19840</string>
+        <key>USE_MOCK</key>
+        <string>false</string>
+    </dict>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>
+    <true/>
+    
+    <key>StandardOutPath</key>
+    <string>/Users/michael/FoundationModelsServer/server.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/michael/FoundationModelsServer/server.log</string>
+    
+    <key>ProcessType</key>
+    <string>Background</string>
+    
+    <key>LowPriorityIO</key>
+    <true/>
+    
+    <key>Nice</key>
+    <integer>10</integer>
+</dict>
+</plist>
+

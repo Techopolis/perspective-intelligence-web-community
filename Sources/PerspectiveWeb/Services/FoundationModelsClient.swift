@@ -66,7 +66,7 @@ extension Request {
     var foundationModels: FoundationModelsClient {
         .init(
             client: self.client,
-            serverURL: Environment.get("FOUNDATION_MODELS_URL") ?? "http://localhost:8081"
+            serverURL: Environment.get("FOUNDATION_MODELS_URL") ?? "http://localhost:19840"
         )
     }
 }

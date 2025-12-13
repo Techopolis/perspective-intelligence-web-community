@@ -10,13 +10,40 @@ A lightweight HTTP server that exposes Apple Foundation Models for use by Perspe
 
 ## Quick Start
 
+### Option 1: Background Service (Recommended)
+
 ```bash
 cd FoundationModelsServer
-swift build
-swift run
+
+# Make scripts executable
+chmod +x scripts/*.sh
+
+# Start in background
+./scripts/start.sh
+
+# Check status
+./scripts/status.sh
+
+# Stop when needed
+./scripts/stop.sh
 ```
 
-The server starts on port **8081** and listens on all interfaces (0.0.0.0).
+### Option 2: Run in Terminal
+
+```bash
+cd FoundationModelsServer
+swift build -c release
+PORT=19840 .build/release/FoundationModelsServer
+```
+
+## Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 19840 | Port to listen on |
+| `USE_MOCK` | false | Use mock responses (for testing) |
+
+The default port **19840** is a high port unlikely to conflict with other services.
 
 ## API Endpoints
 
@@ -34,15 +61,14 @@ Content-Type: application/json
 {
     "messages": [
         {"role": "user", "content": "Hello, how are you?"}
-    ],
-    "stream": false
+    ]
 }
 ```
 
 Response:
 ```json
 {
-    "content": "Hello! I'm doing well, thank you for asking...",
+    "content": "Hello! I'm doing well...",
     "finishReason": "stop"
 }
 ```
@@ -51,32 +77,56 @@ Response:
 ```
 GET /info
 ```
-Returns server version and status.
+
+## Auto-Start on Boot (Optional)
+
+To have the server start automatically when Michael logs in:
+
+1. Edit `com.perspective.foundationmodels.plist`:
+   - Update paths to match where you installed the server
+   - Change `/Users/michael/` to the actual username
+
+2. Install the service:
+```bash
+cp com.perspective.foundationmodels.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.perspective.foundationmodels.plist
+```
+
+3. To uninstall:
+```bash
+launchctl unload ~/Library/LaunchAgents/com.perspective.foundationmodels.plist
+rm ~/Library/LaunchAgents/com.perspective.foundationmodels.plist
+```
+
+## Resource Usage
+
+The server is configured to be lightweight:
+- **Low I/O priority** - Won't slow down other apps
+- **Nice level 10** - Lower CPU priority than normal apps
+- **Minimal memory** - Only loads when requests come in
 
 ## Connecting from Perspective Web
 
-1. Find your Mac's Tailscale IP:
+1. Find Michael's Mac Tailscale IP:
    ```bash
    tailscale ip
    ```
 
-2. Set the environment variable in Perspective Web:
+2. In Perspective Web's `.env`:
    ```bash
-   FOUNDATION_MODELS_URL=http://100.x.x.x:8081
+   FOUNDATION_MODELS_URL=http://100.x.x.x:19840
    ```
 
-## Running as a Background Service
+## Logs
 
-To keep the server running:
-
+View server logs:
 ```bash
-# Using nohup
-nohup swift run &
-
-# Or create a launchd service for automatic startup
+tail -f server.log
 ```
 
-## Firewall
+## Testing
 
-Make sure port 8081 is accessible. If using Tailscale, connections from other Tailscale devices should work automatically.
-
+Run in mock mode without Foundation Models:
+```bash
+USE_MOCK=true ./scripts/start.sh
+```
