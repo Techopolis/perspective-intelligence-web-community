@@ -9,6 +9,13 @@ struct WebSocketMessage: Content {
     var error: String?
 }
 
+/// Context for rendering the main chat view
+struct ChatViewContext: Content {
+    var includeChat: Bool
+    var userName: String
+    var chatID: String?
+}
+
 func routes(_ app: Application) throws {
     // Public routes (no auth required)
     
@@ -53,10 +60,8 @@ func routes(_ app: Application) throws {
     // Main chat page
     protected.get { req async throws -> View in
         let user = try req.auth.require(User.self)
-        return try await req.view.render("index", [
-            "includeChat": true,
-            "userName": user.name
-        ])
+        let context = ChatViewContext(includeChat: true, userName: user.name, chatID: nil)
+        return try await req.view.render("index", context)
     }
     
     // Chat view for specific chat
@@ -73,11 +78,8 @@ func routes(_ app: Application) throws {
             throw Abort(.notFound)
         }
         
-        return try await req.view.render("index", [
-            "chatID": chatID.uuidString,
-            "includeChat": true,
-            "userName": user.name
-        ])
+        let context = ChatViewContext(includeChat: true, userName: user.name, chatID: chatID.uuidString)
+        return try await req.view.render("index", context)
     }
     
     // Onboarding routes (auth required but not onboarding check)
