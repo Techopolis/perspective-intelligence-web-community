@@ -22,7 +22,7 @@ func routes(_ app: Application) throws {
     // ============================================
     let demoMode = true
     
-    // Health check endpoint (public)
+    // Health check endpoint (always public)
     app.get("health") { req async -> HTTPStatus in
         .ok
     }
@@ -50,6 +50,60 @@ func routes(_ app: Application) throws {
         // API routes (demo - no user filtering)
         try app.register(collection: DemoChatController())
         try app.register(collection: DemoMessageController())
+        
+        // WebSocket for streaming (demo - no auth)
+        app.webSocket("ws", "chat", ":chatID") { req, ws async in
+            guard let chatID = req.parameters.get("chatID", as: UUID.self) else {
+                try? await ws.close(code: .unacceptableData)
+                return
+            }
+            
+            ws.onText { ws, text async in
+                do {
+                    let decoder = JSONDecoder()
+                    guard let data = text.data(using: .utf8) else { return }
+                    let input = try decoder.decode(CreateMessageDTO.self, from: data)
+                    
+                    let userMessage = Message(chatID: chatID, role: "user", content: input.content)
+                    try await userMessage.save(on: req.db)
+                    
+                    let userDTO = MessageDTO(from: userMessage)
+                    let encoder = JSONEncoder()
+                    let userWebSocketMessage = WebSocketMessage(type: "user_message", message: userDTO)
+                    if let jsonData = try? encoder.encode(userWebSocketMessage),
+                       let jsonString = String(data: jsonData, encoding: .utf8) {
+                        try await ws.send(jsonString)
+                    }
+                    
+                    let allMessages = try await Message.query(on: req.db)
+                        .filter(\.$chat.$id == chatID)
+                        .sort(\.$createdAt, .ascending)
+                        .all()
+                    
+                    let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
+                    
+                    let aiResponse: String
+                    do {
+                        aiResponse = try await req.foundationModels.complete(messages: messageHistory)
+                    } catch {
+                        aiResponse = "Unable to connect to Foundation Models Server."
+                    }
+                    
+                    let assistantMessage = Message(chatID: chatID, role: "assistant", content: aiResponse)
+                    try await assistantMessage.save(on: req.db)
+                    
+                    let assistantDTO = MessageDTO(from: assistantMessage)
+                    let assistantWebSocketMessage = WebSocketMessage(type: "assistant_message", message: assistantDTO)
+                    if let jsonData = try? encoder.encode(assistantWebSocketMessage),
+                       let jsonString = String(data: jsonData, encoding: .utf8) {
+                        try await ws.send(jsonString)
+                    }
+                } catch {
+                    req.logger.error("WebSocket error: \(error)")
+                    try? await ws.send("{\"type\":\"error\",\"message\":\"An error occurred\"}")
+                }
+            }
+        }
         
     } else {
         // ============================================
@@ -112,77 +166,69 @@ func routes(_ app: Application) throws {
         // API routes (protected)
         try protected.register(collection: ChatController())
         try protected.register(collection: MessageController())
-    }
-    
-    // WebSocket for streaming (protected)
-    protected.webSocket("ws", "chat", ":chatID") { req, ws async in
-        guard let chatID = req.parameters.get("chatID", as: UUID.self) else {
-            try? await ws.close(code: .unacceptableData)
-            return
-        }
         
-        guard let user = req.auth.get(User.self) else {
-            try? await ws.close(code: .policyViolation)
-            return
-        }
-        
-        // Verify chat belongs to user
-        guard let chat = try? await Chat.find(chatID, on: req.db),
-              chat.$user.id == user.id else {
-            try? await ws.close(code: .policyViolation)
-            return
-        }
-        
-        ws.onText { ws, text async in
-            do {
-                // Parse incoming message
-                let decoder = JSONDecoder()
-                guard let data = text.data(using: .utf8) else { return }
-                let input = try decoder.decode(CreateMessageDTO.self, from: data)
-                
-                // Save user message
-                let userMessage = Message(chatID: chatID, role: "user", content: input.content)
-                try await userMessage.save(on: req.db)
-                
-                // Send confirmation of user message
-                let userDTO = MessageDTO(from: userMessage)
-                let encoder = JSONEncoder()
-                let userWebSocketMessage = WebSocketMessage(type: "user_message", message: userDTO)
-                if let jsonData = try? encoder.encode(userWebSocketMessage),
-                   let jsonString = String(data: jsonData, encoding: .utf8) {
-                    try await ws.send(jsonString)
-                }
-                
-                // Get message history
-                let allMessages = try await Message.query(on: req.db)
-                    .filter(\.$chat.$id == chatID)
-                    .sort(\.$createdAt, .ascending)
-                    .all()
-                
-                let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
-                
-                // Call Foundation Models
-                let aiResponse: String
+        // WebSocket for streaming (protected)
+        protected.webSocket("ws", "chat", ":chatID") { req, ws async in
+            guard let chatID = req.parameters.get("chatID", as: UUID.self) else {
+                try? await ws.close(code: .unacceptableData)
+                return
+            }
+            
+            guard let user = req.auth.get(User.self) else {
+                try? await ws.close(code: .policyViolation)
+                return
+            }
+            
+            guard let chat = try? await Chat.find(chatID, on: req.db),
+                  chat.$user.id == user.id else {
+                try? await ws.close(code: .policyViolation)
+                return
+            }
+            
+            ws.onText { ws, text async in
                 do {
-                    aiResponse = try await req.foundationModels.complete(messages: messageHistory)
+                    let decoder = JSONDecoder()
+                    guard let data = text.data(using: .utf8) else { return }
+                    let input = try decoder.decode(CreateMessageDTO.self, from: data)
+                    
+                    let userMessage = Message(chatID: chatID, role: "user", content: input.content)
+                    try await userMessage.save(on: req.db)
+                    
+                    let userDTO = MessageDTO(from: userMessage)
+                    let encoder = JSONEncoder()
+                    let userWebSocketMessage = WebSocketMessage(type: "user_message", message: userDTO)
+                    if let jsonData = try? encoder.encode(userWebSocketMessage),
+                       let jsonString = String(data: jsonData, encoding: .utf8) {
+                        try await ws.send(jsonString)
+                    }
+                    
+                    let allMessages = try await Message.query(on: req.db)
+                        .filter(\.$chat.$id == chatID)
+                        .sort(\.$createdAt, .ascending)
+                        .all()
+                    
+                    let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
+                    
+                    let aiResponse: String
+                    do {
+                        aiResponse = try await req.foundationModels.complete(messages: messageHistory)
+                    } catch {
+                        aiResponse = "Unable to connect to AI service."
+                    }
+                    
+                    let assistantMessage = Message(chatID: chatID, role: "assistant", content: aiResponse)
+                    try await assistantMessage.save(on: req.db)
+                    
+                    let assistantDTO = MessageDTO(from: assistantMessage)
+                    let assistantWebSocketMessage = WebSocketMessage(type: "assistant_message", message: assistantDTO)
+                    if let jsonData = try? encoder.encode(assistantWebSocketMessage),
+                       let jsonString = String(data: jsonData, encoding: .utf8) {
+                        try await ws.send(jsonString)
+                    }
                 } catch {
-                    aiResponse = "I apologize, but I'm unable to connect to the AI service. Please ensure the Mac server is running."
+                    req.logger.error("WebSocket error: \(error)")
+                    try? await ws.send("{\"type\":\"error\",\"message\":\"An error occurred\"}")
                 }
-                
-                // Save assistant message
-                let assistantMessage = Message(chatID: chatID, role: "assistant", content: aiResponse)
-                try await assistantMessage.save(on: req.db)
-                
-                // Send assistant response
-                let assistantDTO = MessageDTO(from: assistantMessage)
-                let assistantWebSocketMessage = WebSocketMessage(type: "assistant_message", message: assistantDTO)
-                if let jsonData = try? encoder.encode(assistantWebSocketMessage),
-                   let jsonString = String(data: jsonData, encoding: .utf8) {
-                    try await ws.send(jsonString)
-                }
-            } catch {
-                req.logger.error("WebSocket error: \(error)")
-                try? await ws.send("{\"type\":\"error\",\"message\":\"An error occurred\"}")
             }
         }
     }
