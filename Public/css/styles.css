@@ -305,12 +305,20 @@ body {
     align-items: center;
     justify-content: center;
     text-align: center;
+    width: 100%;
+    height: 100%;
+    padding: var(--spacing-xl);
+}
+
+.welcome-content {
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .welcome-content h2 {
     font-size: var(--font-size-2xl);
     font-weight: 700;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
     background: var(--accent-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -320,7 +328,8 @@ body {
 .welcome-content p {
     color: var(--text-secondary);
     font-size: var(--font-size-lg);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    line-height: 1.6;
 }
 
 .message {

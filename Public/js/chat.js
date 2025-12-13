@@ -228,7 +228,7 @@ class PerspectiveChat {
             emptyPrompt.className = 'welcome-message';
             emptyPrompt.innerHTML = `
                 <div class="welcome-content">
-                    <h2>Start the conversation</h2>
+                    <h2>Start the Conversation</h2>
                     <p>Ask anything and get intelligent responses powered by Apple Foundation Models.</p>
                 </div>
             `;

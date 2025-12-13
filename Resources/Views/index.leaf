@@ -27,13 +27,13 @@
         </header>
         
         <div class="messages-container" id="messagesContainer" role="log" aria-label="Chat messages" aria-live="polite">
-            <div class="welcome-message" id="welcomeMessage">
-                <div class="welcome-content">
-                    <h2>Welcome to Perspective</h2>
-                    <p>Your interface for Apple Foundation Models.</p>
-                    <p>Start a new conversation or select an existing one from the sidebar.</p>
-                </div>
+        <div class="welcome-message" id="welcomeMessage">
+            <div class="welcome-content">
+                <h2>Welcome to Perspective Web</h2>
+                <p>Your private interface for Apple Foundation Models.</p>
+                <p>Start a new conversation or select an existing one from the sidebar.</p>
             </div>
+        </div>
         </div>
         
         <form class="message-form" id="messageForm" aria-label="Send a message">
