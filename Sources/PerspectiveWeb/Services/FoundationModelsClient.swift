@@ -1,63 +1,99 @@
 import Vapor
 
-/// Client for communicating with the Mac server running Foundation Models
+/// Client for communicating with Ollama server (compatible API)
 actor FoundationModelsClient {
     private let client: Client
     private let serverURL: String
+    private let model: String
     
-    init(client: Client, serverURL: String = "http://localhost:8081") {
+    init(client: Client, serverURL: String = "http://localhost:11434", model: String = "llama3.2") {
         self.client = client
         self.serverURL = serverURL
+        self.model = model
     }
     
-    /// Request structure sent to Mac server
-    struct CompletionRequest: Content {
-        var messages: [MessageItem]
+    // ============================================
+    // Ollama API Structures
+    // ============================================
+    
+    /// Request structure for Ollama /api/chat endpoint
+    struct OllamaChatRequest: Content {
+        var model: String
+        var messages: [OllamaMessage]
         var stream: Bool
         
-        struct MessageItem: Content {
+        struct OllamaMessage: Content {
             var role: String
             var content: String
         }
     }
     
-    /// Response structure from Mac server
-    struct CompletionResponse: Content {
-        var content: String
-        var finishReason: String?
+    /// Response structure from Ollama /api/chat endpoint
+    struct OllamaChatResponse: Content {
+        var model: String?
+        var message: OllamaMessage?
+        var done: Bool?
+        
+        struct OllamaMessage: Content {
+            var role: String
+            var content: String
+        }
     }
     
-    /// Streaming chunk from Mac server
-    struct StreamChunk: Content {
-        var type: String  // "chunk", "done", "error"
-        var content: String?
+    /// Error response from Ollama
+    struct OllamaErrorResponse: Content {
+        var error: String?
     }
     
-    /// Send a completion request to the Mac server
+    /// Send a chat completion request to Ollama
     func complete(messages: [(role: String, content: String)]) async throws -> String {
-        let request = CompletionRequest(
+        let request = OllamaChatRequest(
+            model: model,
             messages: messages.map { .init(role: $0.role, content: $0.content) },
             stream: false
         )
         
-        let response = try await client.post(
-            URI(string: "\(serverURL)/v1/completions")
-        ) { req in
-            try req.content.encode(request)
+        let url = URI(string: "\(serverURL)/api/chat")
+        print("Ollama: POST \(url) model=\(model)")
+        
+        let response: ClientResponse
+        do {
+            response = try await client.post(url) { req in
+                try req.content.encode(request)
+                req.headers.contentType = .json
+            }
+        } catch {
+            print("Ollama: Connection failed - \(error)")
+            throw Abort(.badGateway, reason: "Failed to connect to Ollama at \(serverURL)")
         }
         
         guard response.status == .ok else {
-            throw Abort(.badGateway, reason: "Mac server returned status: \(response.status)")
+            let body = response.body.map { String(buffer: $0) } ?? "no body"
+            print("Ollama: Error \(response.status) - \(body)")
+            
+            if let errorResponse = try? response.content.decode(OllamaErrorResponse.self),
+               let errorMessage = errorResponse.error {
+                throw Abort(.badGateway, reason: "Ollama error: \(errorMessage)")
+            }
+            
+            throw Abort(.badGateway, reason: "Ollama returned status: \(response.status)")
         }
         
-        let completionResponse = try response.content.decode(CompletionResponse.self)
-        return completionResponse.content
+        let chatResponse = try response.content.decode(OllamaChatResponse.self)
+        let content = chatResponse.message?.content ?? ""
+        print("Ollama: Response received (\(content.count) chars)")
+        return content
     }
     
-    /// Check if the Mac server is healthy
+    /// Check if Ollama server is healthy by listing models
     func healthCheck() async throws -> Bool {
-        let response = try await client.get(URI(string: "\(serverURL)/health"))
-        return response.status == .ok
+        let url = URI(string: "\(serverURL)/api/tags")
+        do {
+            let response = try await client.get(url)
+            return response.status == .ok
+        } catch {
+            return false
+        }
     }
 }
 
@@ -66,7 +102,8 @@ extension Request {
     var foundationModels: FoundationModelsClient {
         .init(
             client: self.client,
-            serverURL: Environment.get("FOUNDATION_MODELS_URL") ?? "http://localhost:19840"
+            serverURL: Environment.get("OLLAMA_URL") ?? "http://localhost:11434",
+            model: Environment.get("OLLAMA_MODEL") ?? "llama3.2"
         )
     }
 }

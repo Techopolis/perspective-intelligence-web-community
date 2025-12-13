@@ -35,7 +35,42 @@ public func configure(_ app: Application) async throws {
     // Log startup info
     app.logger.info("Perspective Web starting...")
     app.logger.info("Auth0 Domain: \(app.auth0Config.domain)")
-    app.logger.info("Foundation Models URL: \(Environment.get("FOUNDATION_MODELS_URL") ?? "http://localhost:8081")")
+    
+    let ollamaURL = Environment.get("OLLAMA_URL") ?? "http://localhost:11434"
+    let ollamaModel = Environment.get("OLLAMA_MODEL") ?? "llama3.2"
+    
+    if Environment.get("OLLAMA_URL") == nil {
+        app.logger.warning("OLLAMA_URL not set - using default: \(ollamaURL)")
+    } else {
+        app.logger.info("Ollama URL: \(ollamaURL)")
+    }
+    app.logger.info("Ollama Model: \(ollamaModel)")
+    
+    // Test connection to Ollama server at startup
+    app.logger.info("Testing connection to Ollama server...")
+    do {
+        let response = try await app.client.get(URI(string: "\(ollamaURL)/api/tags"))
+        if response.status == .ok {
+            app.logger.info("Ollama server is reachable!")
+            
+            // Parse and show available models
+            struct ModelsResponse: Content {
+                var models: [ModelInfo]?
+                struct ModelInfo: Content {
+                    var name: String
+                }
+            }
+            if let modelsResponse = try? response.content.decode(ModelsResponse.self),
+               let models = modelsResponse.models {
+                let modelNames = models.map { $0.name }.joined(separator: ", ")
+                app.logger.info("Available models: \(modelNames)")
+            }
+        } else {
+            app.logger.error("Ollama server returned: \(response.status)")
+        }
+    } catch {
+        app.logger.warning("Cannot connect to Ollama at \(ollamaURL) - will retry on first request")
+    }
     
     // Register routes
     try routes(app)

@@ -6,6 +6,13 @@ import NIOPosix
 @main
 enum Entrypoint {
     static func main() async throws {
+        // Load .env file BEFORE environment detection
+        // This ensures FOUNDATION_MODELS_URL and other vars are available
+        let envFile = ".env"
+        if FileManager.default.fileExists(atPath: envFile) {
+            try DotEnvFile.load(path: envFile)
+        }
+        
         var env = try Environment.detect()
         try LoggingSystem.bootstrap(from: &env)
         
