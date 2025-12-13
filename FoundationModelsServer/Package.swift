@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "FoundationModelsServer",
     platforms: [
-        .macOS(.v26)  // Requires macOS 26 for Foundation Models
+        .macOS(.v14)  // Minimum macOS 14, Foundation Models checked at runtime
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.115.0"),
