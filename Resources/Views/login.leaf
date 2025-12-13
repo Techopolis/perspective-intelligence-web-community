@@ -1,0 +1,61 @@
+#extend("base"):
+    #export("content"):
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1 class="login-logo">Perspective</h1>
+                <p class="login-tagline">Your private AI assistant powered by Apple Foundation Models</p>
+            </div>
+            
+            <div class="login-features">
+                <div class="feature-item">
+                    <div class="feature-icon" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h2>Private & Secure</h2>
+                        <p>Your data stays on your infrastructure. No external cloud processing.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h2>Intelligent Chat</h2>
+                        <p>Natural conversations powered by Apple Foundation Models.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h2>Document OCR</h2>
+                        <p>Extract and format text from documents with intelligent structure recognition.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="login-actions">
+                <a href="#(loginURL)" class="btn btn-primary btn-lg btn-login">
+                    Sign In to Get Started
+                </a>
+                <p class="login-note">Secure authentication powered by Auth0</p>
+            </div>
+        </div>
+    </div>
+    #endexport
+#endextend
+

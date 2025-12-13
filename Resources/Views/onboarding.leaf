@@ -1,0 +1,143 @@
+#extend("base"):
+    #export("content"):
+    <div class="onboarding-container">
+        <div class="onboarding-card">
+            <div class="onboarding-header">
+                <h1 class="onboarding-title">Welcome, #(userName)!</h1>
+                <p class="onboarding-subtitle">Let's personalize your experience</p>
+            </div>
+            
+            <form action="/onboarding" method="POST" class="onboarding-form" id="onboardingForm">
+                <div class="form-section">
+                    <h2 class="form-section-title">What are your main goals?</h2>
+                    <p class="form-section-desc">Select what you'd like to accomplish with Perspective</p>
+                    
+                    <div class="goal-options">
+                        <label class="goal-option">
+                            <input type="checkbox" name="goals" value="chat">
+                            <span class="goal-label">
+                                <span class="goal-icon" aria-hidden="true">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                </span>
+                                <span class="goal-text">Chat & Questions</span>
+                            </span>
+                        </label>
+                        
+                        <label class="goal-option">
+                            <input type="checkbox" name="goals" value="documents">
+                            <span class="goal-label">
+                                <span class="goal-icon" aria-hidden="true">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                </span>
+                                <span class="goal-text">Document Processing</span>
+                            </span>
+                        </label>
+                        
+                        <label class="goal-option">
+                            <input type="checkbox" name="goals" value="images">
+                            <span class="goal-label">
+                                <span class="goal-icon" aria-hidden="true">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21 15 16 10 5 21"/>
+                                    </svg>
+                                </span>
+                                <span class="goal-text">Image Recognition</span>
+                            </span>
+                        </label>
+                        
+                        <label class="goal-option">
+                            <input type="checkbox" name="goals" value="coding">
+                            <span class="goal-label">
+                                <span class="goal-icon" aria-hidden="true">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="16 18 22 12 16 6"/>
+                                        <polyline points="8 6 2 12 8 18"/>
+                                    </svg>
+                                </span>
+                                <span class="goal-text">Coding Assistance</span>
+                            </span>
+                        </label>
+                        
+                        <label class="goal-option">
+                            <input type="checkbox" name="goals" value="writing">
+                            <span class="goal-label">
+                                <span class="goal-icon" aria-hidden="true">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                    </svg>
+                                </span>
+                                <span class="goal-text">Writing & Editing</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2 class="form-section-title">How familiar are you with AI assistants?</h2>
+                    <p class="form-section-desc">This helps us tailor tips and suggestions</p>
+                    
+                    <div class="familiarity-options">
+                        <label class="familiarity-option">
+                            <input type="radio" name="aiFamiliarity" value="beginner" required>
+                            <span class="familiarity-label">
+                                <span class="familiarity-title">Beginner</span>
+                                <span class="familiarity-desc">New to AI assistants</span>
+                            </span>
+                        </label>
+                        
+                        <label class="familiarity-option">
+                            <input type="radio" name="aiFamiliarity" value="intermediate">
+                            <span class="familiarity-label">
+                                <span class="familiarity-title">Intermediate</span>
+                                <span class="familiarity-desc">Used ChatGPT or similar</span>
+                            </span>
+                        </label>
+                        
+                        <label class="familiarity-option">
+                            <input type="radio" name="aiFamiliarity" value="advanced">
+                            <span class="familiarity-label">
+                                <span class="familiarity-title">Advanced</span>
+                                <span class="familiarity-desc">Power user, familiar with prompting</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Get Started
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('onboardingForm').addEventListener('submit', function(e) {
+            // Collect selected goals into comma-separated string
+            const goals = Array.from(document.querySelectorAll('input[name="goals"]:checked'))
+                .map(cb => cb.value)
+                .join(',');
+            
+            // Create hidden input for goals
+            const goalsInput = document.createElement('input');
+            goalsInput.type = 'hidden';
+            goalsInput.name = 'goals';
+            goalsInput.value = goals;
+            
+            // Remove checkbox inputs and add hidden field
+            document.querySelectorAll('input[name="goals"]').forEach(cb => cb.name = 'goal_item');
+            this.appendChild(goalsInput);
+        });
+    </script>
+    #endexport
+#endextend
+

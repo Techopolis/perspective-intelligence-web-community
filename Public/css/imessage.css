@@ -1,0 +1,292 @@
+/* ============================================
+   iMessage-Style Chat Bubbles
+   Apple-centric design for Perspective Web
+   ============================================ */
+
+/* Override default message styles for iMessage look */
+.messages-container {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    gap: var(--spacing-sm);
+}
+
+/* Base message bubble */
+.message {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    margin: 0;
+    gap: 0;
+}
+
+/* Remove avatar for cleaner iMessage look */
+.message .message-avatar {
+    display: none;
+}
+
+/* Message content wrapper */
+.message .message-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+/* Hide role label - bubbles indicate sender */
+.message .message-role {
+    display: none;
+}
+
+/* Base bubble style */
+.message .message-text {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 20px;
+    line-height: 1.5;
+    font-size: var(--font-size-base);
+    word-wrap: break-word;
+    position: relative;
+}
+
+/* User messages - right aligned, blue bubble (iMessage style) */
+.message.user {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.message.user .message-text {
+    background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+    color: white;
+    border-bottom-right-radius: 6px;
+}
+
+/* Add subtle tail to user messages */
+.message.user .message-text::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: -6px;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, transparent 50%, #5856D6 50%);
+    border-bottom-left-radius: 10px;
+}
+
+/* Assistant messages - left aligned, gray bubble */
+.message.assistant {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.message.assistant .message-text {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-bottom-left-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+/* Add subtle tail to assistant messages */
+.message.assistant .message-text::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -6px;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(225deg, transparent 50%, var(--bg-tertiary) 50%);
+    border-bottom-right-radius: 10px;
+}
+
+/* Code blocks inside bubbles */
+.message .message-text code {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.message.assistant .message-text code {
+    background: var(--bg-hover);
+}
+
+.message .message-text pre {
+    background: rgba(0, 0, 0, 0.15);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    overflow-x: auto;
+    margin: var(--spacing-sm) 0;
+}
+
+.message.assistant .message-text pre {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+}
+
+.message .message-text pre code {
+    background: none;
+    padding: 0;
+}
+
+/* Timestamp (optional, can be shown on hover) */
+.message-timestamp {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0 var(--spacing-sm);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.message:hover .message-timestamp,
+.message:focus-within .message-timestamp {
+    opacity: 1;
+}
+
+/* Loading indicator in iMessage style */
+.message.assistant .message-loading {
+    background: var(--bg-tertiary);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 20px;
+    border-bottom-left-radius: 6px;
+    border: 1px solid var(--border-color);
+    display: inline-flex;
+    gap: 4px;
+}
+
+.message.assistant .message-loading span {
+    width: 8px;
+    height: 8px;
+    background-color: var(--text-muted);
+    border-radius: 50%;
+    animation: imessage-typing 1.4s infinite ease-in-out both;
+}
+
+.message.assistant .message-loading span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.message.assistant .message-loading span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes imessage-typing {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Consecutive messages from same sender - reduce gap and adjust corners */
+.message.user + .message.user,
+.message.assistant + .message.assistant {
+    margin-top: 2px;
+}
+
+.message.user + .message.user .message-text {
+    border-top-right-radius: 6px;
+}
+
+.message.assistant + .message.assistant .message-text {
+    border-top-left-radius: 6px;
+}
+
+/* Welcome message styling */
+.welcome-message {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.welcome-content {
+    max-width: 400px;
+}
+
+.welcome-content h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.welcome-content p {
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+}
+
+/* Input area - iMessage style */
+.message-form {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--spacing-sm);
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bg-tertiary);
+    border-radius: 24px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    transition: border-color var(--transition-fast);
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--accent-primary);
+}
+
+.message-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    resize: none;
+    max-height: 120px;
+    min-height: 24px;
+    line-height: 1.5;
+    padding: var(--spacing-xs) 0;
+}
+
+.btn-send {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.btn-send:disabled {
+    background: var(--bg-hover);
+    opacity: 0.5;
+}
+
+.btn-send svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Accessible focus indicators */
+.message:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+    border-radius: var(--border-radius);
+}
+

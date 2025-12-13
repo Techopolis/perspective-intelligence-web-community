@@ -1,0 +1,288 @@
+/* ============================================
+   Authentication & Onboarding Styles
+   ============================================ */
+
+/* ============================================
+   Login Page
+   ============================================ */
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    background: 
+        radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        var(--bg-primary);
+}
+
+.login-card {
+    max-width: 500px;
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.login-logo {
+    font-size: 3rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-md);
+}
+
+.login-tagline {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.login-features {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.feature-item {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.feature-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-primary);
+}
+
+.feature-text h2 {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.feature-text p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.login-actions {
+    text-align: center;
+}
+
+.btn-login {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-md);
+    text-decoration: none;
+}
+
+.login-note {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+
+/* ============================================
+   Onboarding Page
+   ============================================ */
+
+.onboarding-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    background: 
+        radial-gradient(ellipse at top right, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+        var(--bg-primary);
+}
+
+.onboarding-card {
+    max-width: 600px;
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+}
+
+.onboarding-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.onboarding-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-sm);
+}
+
+.onboarding-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+}
+
+.onboarding-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.form-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-section-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-top: calc(-1 * var(--spacing-sm));
+}
+
+/* Goal Options (Checkboxes) */
+.goal-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.goal-option {
+    cursor: pointer;
+}
+
+.goal-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.goal-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+    min-height: 60px;
+}
+
+.goal-option:hover .goal-label {
+    border-color: var(--accent-primary);
+}
+
+.goal-option input:checked + .goal-label {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+}
+
+.goal-option input:focus + .goal-label {
+    box-shadow: var(--focus-ring);
+}
+
+.goal-icon {
+    flex-shrink: 0;
+    color: var(--accent-primary);
+}
+
+.goal-text {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* Familiarity Options (Radio) */
+.familiarity-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.familiarity-option {
+    cursor: pointer;
+}
+
+.familiarity-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.familiarity-label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.familiarity-option:hover .familiarity-label {
+    border-color: var(--accent-primary);
+}
+
+.familiarity-option input:checked + .familiarity-label {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+}
+
+.familiarity-option input:focus + .familiarity-label {
+    box-shadow: var(--focus-ring);
+}
+
+.familiarity-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.familiarity-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.form-actions {
+    padding-top: var(--spacing-md);
+}
+
+.form-actions .btn {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-lg);
+}
+
