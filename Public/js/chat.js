@@ -11,13 +11,16 @@ class PerspectiveChat {
         
         this.initElements();
         this.bindEvents();
-        this.loadChats();
         this.checkServerStatus();
-        
-        // Handle initial chat ID from URL
-        if (window.initialChatID) {
-            this.selectChat(window.initialChatID);
-        }
+
+        // Load chats, then either select from URL or auto-create
+        this.loadChats().then(() => {
+            if (window.initialChatID) {
+                this.selectChat(window.initialChatID);
+            } else if (!this.currentChatId) {
+                this.createNewChat();
+            }
+        });
     }
     
     initElements() {
@@ -143,7 +146,6 @@ class PerspectiveChat {
         item.className = 'chat-item';
         item.dataset.chatId = chat.id;
         item.setAttribute('role', 'listitem');
-        item.setAttribute('aria-label', `Open chat: ${chat.title}`);
         
         if (this.currentChatId === chat.id) {
             item.classList.add('active');
@@ -244,9 +246,8 @@ class PerspectiveChat {
     }
     
     appendMessage(message) {
-        const messageEl = document.createElement('article');
+        const messageEl = document.createElement('div');
         messageEl.className = `message ${message.role}`;
-        messageEl.setAttribute('aria-label', `${message.role === 'user' ? 'You' : 'Assistant'} said`);
         
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
@@ -281,10 +282,10 @@ class PerspectiveChat {
     }
     
     appendLoadingMessage() {
-        const messageEl = document.createElement('article');
+        const messageEl = document.createElement('div');
         messageEl.className = 'message assistant';
         messageEl.id = 'loadingMessage';
-        messageEl.setAttribute('aria-label', 'Assistant is thinking');
+        messageEl.setAttribute('aria-hidden', 'true');
         
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
@@ -358,49 +359,52 @@ class PerspectiveChat {
     async sendMessage() {
         const content = this.messageInput.value.trim();
         if (!content || !this.currentChatId || this.isLoading) return;
-        
+
         this.isLoading = true;
         this.messageInput.value = '';
         this.autoResizeTextarea();
         this.sendBtn.disabled = true;
-        
+
         // Append user message immediately
         this.appendMessage({ role: 'user', content });
-        this.appendLoadingMessage();
         this.announce('Sending message');
-        
-        try {
-            const response = await fetch(`/api/chats/${this.currentChatId}/messages`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content })
-            });
-            
-            const messages = await response.json();
-            
-            // Remove loading and append assistant message
-            this.removeLoadingMessage();
-            
-            if (messages.length > 1) {
-                this.appendMessage(messages[1]); // Assistant message
+
+        // Prefer WebSocket for streaming; fall back to HTTP POST
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            this.appendLoadingMessage();
+            this.websocket.send(JSON.stringify({ content }));
+            // Response handled by onmessage streaming handlers
+        } else {
+            this.appendLoadingMessage();
+            try {
+                const response = await fetch(`/api/chats/${this.currentChatId}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                const messages = await response.json();
+                this.removeLoadingMessage();
+
+                if (messages.length > 1) {
+                    this.appendMessage(messages[1]);
+                }
+
+                await this.loadChats();
+                this.announce('Response received');
+            } catch (error) {
+                console.error('Failed to send message:', error);
+                this.removeLoadingMessage();
+                this.appendMessage({
+                    role: 'assistant',
+                    content: 'Sorry, there was an error processing your message. Please try again.'
+                });
+                this.announce('Error sending message');
+            } finally {
+                this.isLoading = false;
+                this.sendBtn.disabled = false;
+                this.messageInput.focus();
             }
-            
-            // Reload chat list to update titles
-            await this.loadChats();
-            
-            this.announce('Response received');
-        } catch (error) {
-            console.error('Failed to send message:', error);
-            this.removeLoadingMessage();
-            this.appendMessage({
-                role: 'assistant',
-                content: 'Sorry, there was an error processing your message. Please try again.'
-            });
-            this.announce('Error sending message');
-        } finally {
-            this.isLoading = false;
-            this.sendBtn.disabled = false;
-            this.messageInput.focus();
         }
     }
     
@@ -422,9 +426,51 @@ class PerspectiveChat {
         this.websocket.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'assistant_message' && data.message) {
-                    this.removeLoadingMessage();
-                    this.appendMessage(data.message);
+
+                switch (data.type) {
+                    case 'stream_start':
+                        this.removeLoadingMessage();
+                        this.startStreamingMessage();
+                        break;
+
+                    case 'chunk':
+                        if (data.content) {
+                            this.appendStreamChunk(data.content);
+                        }
+                        break;
+
+                    case 'done':
+                        this.finalizeStreamingMessage(data.message);
+                        this.loadChats();
+                        this.isLoading = false;
+                        this.sendBtn.disabled = false;
+                        this.messageInput.focus();
+                        this.announce('Response received');
+                        break;
+
+                    case 'error':
+                        this.removeLoadingMessage();
+                        this.finalizeStreamingMessage(null);
+                        this.appendMessage({
+                            role: 'assistant',
+                            content: data.message || 'An error occurred'
+                        });
+                        this.isLoading = false;
+                        this.sendBtn.disabled = false;
+                        this.messageInput.focus();
+                        this.announce('Error receiving response');
+                        break;
+
+                    // Backward compat: non-streaming assistant_message
+                    case 'assistant_message':
+                        if (data.message) {
+                            this.removeLoadingMessage();
+                            this.appendMessage(data.message);
+                            this.isLoading = false;
+                            this.sendBtn.disabled = false;
+                            this.messageInput.focus();
+                        }
+                        break;
                 }
             } catch (error) {
                 console.error('WebSocket message error:', error);
@@ -440,6 +486,64 @@ class PerspectiveChat {
         };
     }
     
+    startStreamingMessage() {
+        const messageEl = document.createElement('div');
+        messageEl.className = 'message assistant streaming';
+        messageEl.id = 'streamingMessage';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.setAttribute('aria-hidden', 'true');
+        avatar.textContent = 'AI';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+
+        const role = document.createElement('div');
+        role.className = 'message-role';
+        role.textContent = 'Perspective AI';
+
+        const text = document.createElement('div');
+        text.className = 'message-text';
+
+        content.appendChild(role);
+        content.appendChild(text);
+        messageEl.appendChild(avatar);
+        messageEl.appendChild(content);
+
+        const welcomeEl = this.messagesContainer.querySelector('.welcome-message');
+        if (welcomeEl) welcomeEl.remove();
+
+        this.messagesContainer.appendChild(messageEl);
+        this.streamingRawText = '';
+        this.scrollToBottom();
+        this.announce('Assistant is responding');
+    }
+
+    appendStreamChunk(chunk) {
+        this.streamingRawText = (this.streamingRawText || '') + chunk;
+        const el = document.querySelector('#streamingMessage .message-text');
+        if (el) {
+            el.innerHTML = this.formatMessage(this.streamingRawText);
+            this.scrollToBottom();
+        }
+    }
+
+    finalizeStreamingMessage(finalMessage) {
+        const el = document.getElementById('streamingMessage');
+        if (el) {
+            el.classList.remove('streaming');
+            el.removeAttribute('id');
+            if (finalMessage) {
+                const textEl = el.querySelector('.message-text');
+                if (textEl) {
+                    textEl.innerHTML = this.formatMessage(finalMessage.content);
+                }
+            }
+        }
+        this.streamingRawText = '';
+    }
+
     openDeleteModal(chat) {
         this.chatToDelete = chat;
         this.deleteDialog.showModal();

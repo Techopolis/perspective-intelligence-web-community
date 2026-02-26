@@ -2,7 +2,7 @@
     #export("content"):
     <nav class="sidebar" role="navigation" aria-label="Chat history">
         <div class="sidebar-header">
-            <h1 class="logo">Perspective</h1>
+            <h1 class="logo">Perspective Web</h1>
             <button type="button" class="btn btn-primary new-chat-btn" id="newChatBtn" aria-label="Start new chat">
                 New Chat
             </button>
@@ -14,7 +14,7 @@
                 <span class="user-name">#(userName)</span>
                 <a href="/logout" class="btn btn-secondary btn-sm" aria-label="Sign out">Sign Out</a>
             </div>
-            <div class="server-status" id="serverStatus" role="status" aria-live="polite">
+            <div class="server-status" id="serverStatus">
                 <span class="status-indicator" aria-hidden="true"></span>
                 <span class="status-text">Checking server...</span>
             </div>
@@ -26,7 +26,7 @@
             <h2 class="chat-title" id="chatTitle">Select or start a new chat</h2>
         </header>
         
-        <div class="messages-container" id="messagesContainer" role="log" aria-label="Chat messages" aria-live="polite">
+        <div class="messages-container" id="messagesContainer" aria-label="Chat messages">
         <div class="welcome-message" id="welcomeMessage">
             <div class="welcome-content">
                 <h2>Welcome to Perspective Web</h2>

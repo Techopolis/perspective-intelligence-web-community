@@ -59,13 +59,17 @@ struct MessageController: RouteCollection {
         let userMessage = Message(chatID: chatID, role: "user", content: input.content)
         try await userMessage.save(on: req.db)
         
-        // Update chat title if this is the first message
-        try await chat.$messages.load(on: req.db)
-        if chat.messages.count == 1 {
-            // Use first 50 chars of message as title
+        // Update chat title if this is the first message (race-safe)
+        let messageCount = try await Message.query(on: req.db)
+            .filter(\.$chat.$id == chatID)
+            .count()
+        if messageCount == 1 {
             let newTitle = String(input.content.prefix(50))
-            chat.title = newTitle.isEmpty ? "New Chat" : newTitle
-            try await chat.save(on: req.db)
+            try await Chat.query(on: req.db)
+                .filter(\.$id == chatID)
+                .filter(\.$title == "New Chat")
+                .set(\.$title, to: newTitle.isEmpty ? "New Chat" : newTitle)
+                .update()
         }
         
         // Get all messages for context

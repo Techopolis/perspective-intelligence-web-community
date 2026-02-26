@@ -1,6 +1,6 @@
 import NIOSSL
 import Fluent
-import FluentSQLiteDriver
+import FluentPostgresDriver
 import Leaf
 import Vapor
 
@@ -14,7 +14,8 @@ public func configure(_ app: Application) async throws {
     app.middleware.use(app.sessions.middleware)
     
     // Configure database
-    app.databases.use(DatabaseConfigurationFactory.sqlite(.file("db.sqlite")), as: .sqlite)
+    let databaseURL = Environment.get("DATABASE_URL") ?? "postgres://perspective:perspective@localhost:5432/perspective_web"
+    try app.databases.use(.postgres(url: databaseURL), as: .psql)
     
     // Register migrations in order
     app.migrations.add(CreateUser())
@@ -31,21 +32,24 @@ public func configure(_ app: Application) async throws {
     
     // Configure Auth0
     app.auth0Config = Auth0Config.fromEnvironment()
-    
+
+    // Configure shared FoundationModelsClient singleton
+    app.initializeFoundationModelsClient()
+
     // Log startup info
     app.logger.info("Perspective Web starting...")
     app.logger.info("Auth0 Domain: \(app.auth0Config.domain)")
-    
+
     let ollamaURL = Environment.get("OLLAMA_URL") ?? "http://michaels-mbp:11435"
     let ollamaModel = Environment.get("OLLAMA_MODEL") ?? "apple.local:latest"
-    
+
     if Environment.get("OLLAMA_URL") == nil {
         app.logger.warning("OLLAMA_URL not set - using default: \(ollamaURL)")
     } else {
         app.logger.info("Ollama URL: \(ollamaURL)")
     }
     app.logger.info("Ollama Model: \(ollamaModel)")
-    
+
     // Test connection to Ollama server at startup
     app.logger.info("Testing connection to Ollama server...")
     do {

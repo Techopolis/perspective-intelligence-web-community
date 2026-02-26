@@ -57,51 +57,16 @@ func routes(_ app: Application) throws {
                 try? await ws.close(code: .unacceptableData)
                 return
             }
-            
+
+            let handler = ChatConnectionHandler(
+                chatID: chatID,
+                db: req.db,
+                client: req.application.foundationModelsClient,
+                logger: req.logger
+            )
+
             ws.onText { ws, text async in
-                do {
-                    let decoder = JSONDecoder()
-                    guard let data = text.data(using: .utf8) else { return }
-                    let input = try decoder.decode(CreateMessageDTO.self, from: data)
-                    
-                    let userMessage = Message(chatID: chatID, role: "user", content: input.content)
-                    try await userMessage.save(on: req.db)
-                    
-                    let userDTO = MessageDTO(from: userMessage)
-                    let encoder = JSONEncoder()
-                    let userWebSocketMessage = WebSocketMessage(type: "user_message", message: userDTO)
-                    if let jsonData = try? encoder.encode(userWebSocketMessage),
-                       let jsonString = String(data: jsonData, encoding: .utf8) {
-                        try await ws.send(jsonString)
-                    }
-                    
-                    let allMessages = try await Message.query(on: req.db)
-                        .filter(\.$chat.$id == chatID)
-                        .sort(\.$createdAt, .ascending)
-                        .all()
-                    
-                    let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
-                    
-                    let aiResponse: String
-                    do {
-                        aiResponse = try await req.foundationModels.complete(messages: messageHistory)
-                    } catch {
-                        aiResponse = "Unable to connect to Foundation Models Server."
-                    }
-                    
-                    let assistantMessage = Message(chatID: chatID, role: "assistant", content: aiResponse)
-                    try await assistantMessage.save(on: req.db)
-                    
-                    let assistantDTO = MessageDTO(from: assistantMessage)
-                    let assistantWebSocketMessage = WebSocketMessage(type: "assistant_message", message: assistantDTO)
-                    if let jsonData = try? encoder.encode(assistantWebSocketMessage),
-                       let jsonString = String(data: jsonData, encoding: .utf8) {
-                        try await ws.send(jsonString)
-                    }
-                } catch {
-                    req.logger.error("WebSocket error: \(error)")
-                    try? await ws.send("{\"type\":\"error\",\"message\":\"An error occurred\"}")
-                }
+                await handler.handleMessage(text, ws: ws)
             }
         }
         
@@ -173,62 +138,27 @@ func routes(_ app: Application) throws {
                 try? await ws.close(code: .unacceptableData)
                 return
             }
-            
+
             guard let user = req.auth.get(User.self) else {
                 try? await ws.close(code: .policyViolation)
                 return
             }
-            
+
             guard let chat = try? await Chat.find(chatID, on: req.db),
                   chat.$user.id == user.id else {
                 try? await ws.close(code: .policyViolation)
                 return
             }
-            
+
+            let handler = ChatConnectionHandler(
+                chatID: chatID,
+                db: req.db,
+                client: req.application.foundationModelsClient,
+                logger: req.logger
+            )
+
             ws.onText { ws, text async in
-                do {
-                    let decoder = JSONDecoder()
-                    guard let data = text.data(using: .utf8) else { return }
-                    let input = try decoder.decode(CreateMessageDTO.self, from: data)
-                    
-                    let userMessage = Message(chatID: chatID, role: "user", content: input.content)
-                    try await userMessage.save(on: req.db)
-                    
-                    let userDTO = MessageDTO(from: userMessage)
-                    let encoder = JSONEncoder()
-                    let userWebSocketMessage = WebSocketMessage(type: "user_message", message: userDTO)
-                    if let jsonData = try? encoder.encode(userWebSocketMessage),
-                       let jsonString = String(data: jsonData, encoding: .utf8) {
-                        try await ws.send(jsonString)
-                    }
-                    
-                    let allMessages = try await Message.query(on: req.db)
-                        .filter(\.$chat.$id == chatID)
-                        .sort(\.$createdAt, .ascending)
-                        .all()
-                    
-                    let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
-                    
-                    let aiResponse: String
-                    do {
-                        aiResponse = try await req.foundationModels.complete(messages: messageHistory)
-                    } catch {
-                        aiResponse = "Unable to connect to AI service."
-                    }
-                    
-                    let assistantMessage = Message(chatID: chatID, role: "assistant", content: aiResponse)
-                    try await assistantMessage.save(on: req.db)
-                    
-                    let assistantDTO = MessageDTO(from: assistantMessage)
-                    let assistantWebSocketMessage = WebSocketMessage(type: "assistant_message", message: assistantDTO)
-                    if let jsonData = try? encoder.encode(assistantWebSocketMessage),
-                       let jsonString = String(data: jsonData, encoding: .utf8) {
-                        try await ws.send(jsonString)
-                    }
-                } catch {
-                    req.logger.error("WebSocket error: \(error)")
-                    try? await ws.send("{\"type\":\"error\",\"message\":\"An error occurred\"}")
-                }
+                await handler.handleMessage(text, ws: ws)
             }
         }
     }

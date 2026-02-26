@@ -409,6 +409,24 @@ body {
     padding: 0;
 }
 
+/* Streaming cursor animation */
+.message.streaming .message-text::after {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-primary);
+    border-radius: 50%;
+    vertical-align: middle;
+    animation: blink-cursor 0.8s steps(2) infinite;
+    margin-left: 4px;
+}
+
+@keyframes blink-cursor {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
 /* Loading animation */
 .message-loading {
     display: flex;

@@ -89,7 +89,9 @@ struct AuthController: RouteCollection {
         return try response.content.decode(UserInfoResponse.self)
     }
     
-    /// Find existing user or create new one
+    /// Find existing user or create new one.
+    /// Wrapped in a transaction to prevent TOCTOU races when two
+    /// concurrent Auth0 callbacks arrive for the same user.
     private func findOrCreateUser(
         auth0ID: String,
         email: String,
@@ -97,28 +99,46 @@ struct AuthController: RouteCollection {
         pictureURL: String?,
         req: Request
     ) async throws -> User {
-        // Try to find existing user by Auth0 ID
-        if let existingUser = try await User.query(on: req.db)
-            .filter(\.$auth0ID == auth0ID)
-            .first() {
-            // Update user info in case it changed
-            existingUser.email = email
-            existingUser.name = name
-            existingUser.pictureURL = pictureURL
-            try await existingUser.save(on: req.db)
-            return existingUser
+        try await req.db.transaction { db in
+            // Try to find existing user by Auth0 ID
+            if let existingUser = try await User.query(on: db)
+                .filter(\.$auth0ID == auth0ID)
+                .first() {
+                // Update user info in case it changed
+                existingUser.email = email
+                existingUser.name = name
+                existingUser.pictureURL = pictureURL
+                try await existingUser.save(on: db)
+                return existingUser
+            }
+
+            // Create new user — catch unique constraint violations
+            // in case a concurrent transaction inserted first
+            let newUser = User(
+                auth0ID: auth0ID,
+                email: email,
+                name: name,
+                pictureURL: pictureURL,
+                onboardingCompleted: false
+            )
+            do {
+                try await newUser.save(on: db)
+                return newUser
+            } catch {
+                // Constraint violation: another transaction created the user.
+                // Retry the find within the same transaction.
+                if let existingUser = try await User.query(on: db)
+                    .filter(\.$auth0ID == auth0ID)
+                    .first() {
+                    existingUser.email = email
+                    existingUser.name = name
+                    existingUser.pictureURL = pictureURL
+                    try await existingUser.save(on: db)
+                    return existingUser
+                }
+                throw error
+            }
         }
-        
-        // Create new user
-        let newUser = User(
-            auth0ID: auth0ID,
-            email: email,
-            name: name,
-            pictureURL: pictureURL,
-            onboardingCompleted: false
-        )
-        try await newUser.save(on: req.db)
-        return newUser
     }
 }
 
