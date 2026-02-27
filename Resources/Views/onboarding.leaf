@@ -1,6 +1,6 @@
 #extend("base"):
     #export("content"):
-    <div class="onboarding-container">
+    <main class="onboarding-container">
         <div class="onboarding-card">
             <div class="onboarding-header">
                 <h1 class="onboarding-title">Welcome, #(userName)!</h1>
@@ -8,10 +8,10 @@
             </div>
             
             <form action="/onboarding" method="POST" class="onboarding-form" id="onboardingForm">
-                <div class="form-section">
-                    <h2 class="form-section-title">What are your main goals?</h2>
+                <fieldset class="form-section">
+                    <legend class="form-section-title">What are your main goals?</legend>
                     <p class="form-section-desc">Select what you'd like to accomplish with Perspective</p>
-                    
+
                     <div class="goal-options">
                         <label class="goal-option">
                             <input type="checkbox" name="goals" value="chat">
@@ -78,12 +78,12 @@
                             </span>
                         </label>
                     </div>
-                </div>
-                
-                <div class="form-section">
-                    <h2 class="form-section-title">How familiar are you with AI assistants?</h2>
+                </fieldset>
+
+                <fieldset class="form-section">
+                    <legend class="form-section-title">How familiar are you with AI assistants?</legend>
                     <p class="form-section-desc">This helps us tailor tips and suggestions</p>
-                    
+
                     <div class="familiarity-options">
                         <label class="familiarity-option">
                             <input type="radio" name="aiFamiliarity" value="beginner" required>
@@ -109,7 +109,7 @@
                             </span>
                         </label>
                     </div>
-                </div>
+                </fieldset>
                 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -118,8 +118,8 @@
                 </div>
             </form>
         </div>
-    </div>
-    
+    </main>
+
     <script>
         document.getElementById('onboardingForm').addEventListener('submit', function(e) {
             // Collect selected goals into comma-separated string

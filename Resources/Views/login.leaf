@@ -1,12 +1,12 @@
 #extend("base"):
     #export("content"):
-    <div class="login-container">
+    <main class="login-container">
         <div class="login-card">
             <div class="login-header">
                 <h1 class="login-logo">Perspective</h1>
                 <p class="login-tagline">Your private AI assistant powered by Apple Foundation Models</p>
             </div>
-            
+
             <div class="login-features">
                 <div class="feature-item">
                     <div class="feature-icon" aria-hidden="true">
@@ -49,13 +49,13 @@
             </div>
             
             <div class="login-actions">
-                <a href="#(loginURL)" class="btn btn-primary btn-lg btn-login">
+                <a href="#(loginURL)" class="btn btn-primary btn-lg btn-login" role="button">
                     Sign In to Get Started
                 </a>
                 <p class="login-note">Secure authentication powered by Auth0</p>
             </div>
         </div>
-    </div>
+    </main>
     #endexport
 #endextend
 

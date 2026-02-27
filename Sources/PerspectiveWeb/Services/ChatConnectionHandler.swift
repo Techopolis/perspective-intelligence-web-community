@@ -25,6 +25,14 @@ actor ChatConnectionHandler {
             guard let data = text.data(using: .utf8) else { return }
             let input = try decoder.decode(CreateMessageDTO.self, from: data)
 
+            // Determine effective agent: use specified agent or auto-classify
+            let agentId: String
+            if let requested = input.agent, !requested.isEmpty {
+                agentId = requested
+            } else {
+                agentId = await client.classify(message: input.content)
+            }
+
             // Save user message
             let userMessage = Message(chatID: chatID, role: "user", content: input.content)
             try await userMessage.save(on: db)
@@ -56,22 +64,33 @@ actor ChatConnectionHandler {
                 .filter(\.$chat.$id == chatID)
                 .sort(\.$createdAt, .ascending)
                 .all()
-            let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
+            let rawHistory = allMessages.map { (role: $0.role, content: $0.content) }
+            let systemMsg = (role: "system", content: FoundationModelsClient.systemPrompt(for: agentId))
+            let messageHistory = [systemMsg] + rawHistory
 
-            // Signal stream start
-            try await ws.send("{\"type\":\"stream_start\"}")
+            // Signal stream start with detected agent
+            let streamStart = "{\"type\":\"stream_start\",\"agent\":\"\(agentId)\"}"
+            try await ws.send(streamStart)
 
             // Stream from Ollama
             var fullContent = ""
+            var promptTokens: Int?
+            var completionTokens: Int?
             let stream = client.completeStreaming(messages: messageHistory)
 
             do {
-                for try await chunk in stream {
-                    fullContent += chunk
-                    let chunkDTO = StreamChunkDTO(type: "chunk", content: chunk, messageId: nil)
-                    if let jsonData = try? encoder.encode(chunkDTO),
-                       let jsonString = String(data: jsonData, encoding: .utf8) {
-                        try await ws.send(jsonString)
+                for try await event in stream {
+                    switch event {
+                    case .content(let chunk):
+                        fullContent += chunk
+                        let chunkDTO = StreamChunkDTO(type: "chunk", content: chunk, messageId: nil)
+                        if let jsonData = try? encoder.encode(chunkDTO),
+                           let jsonString = String(data: jsonData, encoding: .utf8) {
+                            try await ws.send(jsonString)
+                        }
+                    case .done(let pt, let ct):
+                        promptTokens = pt
+                        completionTokens = ct
                     }
                 }
             } catch {
@@ -83,9 +102,9 @@ actor ChatConnectionHandler {
             let assistantMessage = Message(chatID: chatID, role: "assistant", content: fullContent)
             try await assistantMessage.save(on: db)
 
-            // Send done signal with the final message
+            // Send done signal with the final message and token counts
             let assistantDTO = MessageDTO(from: assistantMessage)
-            let doneMsg = WebSocketMessage(type: "done", message: assistantDTO)
+            let doneMsg = WebSocketMessage(type: "done", message: assistantDTO, promptTokens: promptTokens, completionTokens: completionTokens)
             if let jsonData = try? encoder.encode(doneMsg),
                let jsonString = String(data: jsonData, encoding: .utf8) {
                 try await ws.send(jsonString)

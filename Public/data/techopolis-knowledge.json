@@ -1,0 +1,177 @@
+{
+  "company": {
+    "name": "Techopolis LLC",
+    "website": "https://techopolis.app",
+    "email": "techopolis@techopolisonline.com",
+    "location": "Texas, USA",
+    "timezone": "Central Time (CT)",
+    "tagline": "A New Perspective on Apps",
+    "mission": "Creating privacy-focused, accessible experiences for iOS, macOS, visionOS, and beyond.",
+    "description": "Techopolis is an app development company that specializes in building privacy-focused, accessible applications for Apple platforms. Founded by Michael Doise, the company creates apps with an emphasis on user privacy, on-device processing, and inclusive design.",
+    "team": [
+      {
+        "name": "Taylor Arndt",
+        "role": "Developer & Accessibility Specialist",
+        "description": "Taylor is a developer and accessibility specialist who is blind and neurodivergent. Taylor uses AI as a support system for coding, communication, and writing."
+      },
+      {
+        "name": "Michael Doise",
+        "role": "Founder",
+        "description": "Michael founded Techopolis and handles technical infrastructure."
+      }
+    ],
+    "values": [
+      "Privacy-first: All data processed on-device whenever possible",
+      "Accessibility: Every app is designed to be fully accessible for everyone",
+      "Quality: Native apps built for each platform, not cross-platform compromises"
+    ]
+  },
+  "apps": [
+    {
+      "name": "Perspective Intelligence",
+      "tagline": "Your private on-device AI assistant",
+      "description": "Perspective Intelligence is a private on-device AI assistant for iPhone, iPad, Mac, and Apple Watch. It offers chat functionality, audio transcription, and image text recognition — all processed locally on the user's device using Apple Foundation Models.",
+      "price": "Free with in-app purchases",
+      "subscription": "$5.99/month or $49.99/year for All Access",
+      "platforms": ["iPhone", "iPad", "Mac", "Apple Watch"],
+      "category": "Productivity",
+      "rating": "4.6/5",
+      "requirements": "iOS 26.0 or later",
+      "size": "60.9 MB",
+      "appStoreUrl": "https://apps.apple.com/us/app/perspective-intelligence/id6448894750",
+      "freeFeatures": [
+        "Full chat experience with natural conversations",
+        "Text recognition (OCR) from images",
+        "AI Vision for describing surroundings and identifying objects",
+        "Export conversations as plain text or markdown",
+        "Image generation via Image Playgrounds",
+        "Apple Watch support for basic chats",
+        "On-device processing using Apple Foundation Models"
+      ],
+      "premiumFeatures": [
+        "Voice mode for hands-free conversations",
+        "Audio transcription from files",
+        "Chat memories",
+        "Contacts lookup",
+        "Points of interest search",
+        "Weather lookup",
+        "RSS feed integration",
+        "Web search (private, can be disabled)",
+        "Email composition"
+      ],
+      "privacy": "All features rely on on-device processing. Your data never leaves your device. Web search and weather features can be disabled in Settings."
+    },
+    {
+      "name": "Perspective Notify",
+      "description": "Push notification service powered by OneSignal. Send and manage push notifications for your apps and services.",
+      "price": "$3.99",
+      "platforms": ["iPhone", "iPad"],
+      "category": "Utilities",
+      "appStoreUrl": "https://apps.apple.com/us/developer/techopolis-online-solutions-llc/id1581877697"
+    },
+    {
+      "name": "Perspective Meetings",
+      "description": "Organizes recurring meeting links (Zoom, Google Meet) in one centralized location. Keep all your meeting links organized and accessible.",
+      "price": "Free",
+      "platforms": ["iPhone", "iPad", "Apple Vision"],
+      "category": "Business",
+      "appStoreUrl": "https://apps.apple.com/us/developer/techopolis-online-solutions-llc/id1581877697"
+    },
+    {
+      "name": "Beyond The Gallery",
+      "description": "A community platform for discovering and sharing Apple Shortcuts automations. Find, share, and explore creative shortcuts built by the community.",
+      "price": "Free",
+      "platforms": ["iPhone", "iPad"],
+      "category": "Lifestyle",
+      "appStoreUrl": "https://apps.apple.com/us/developer/techopolis-online-solutions-llc/id1581877697"
+    },
+    {
+      "name": "Current City",
+      "description": "Displays the user's current location and city information. Built for travelers who want to quickly see where they are.",
+      "price": "$0.99",
+      "platforms": ["iPhone", "iPad"],
+      "category": "Travel",
+      "appStoreUrl": "https://apps.apple.com/us/app/current-city/id1097557845"
+    }
+  ],
+  "services": [
+    {
+      "name": "Native App Development",
+      "description": "Custom native mobile app development for iOS and Android. Apps are completely native on each platform, built at a competitive price. Techopolis specializes in creating accessible, privacy-focused applications.",
+      "platforms": ["iOS", "Android"],
+      "contact": "techopolis@techopolisonline.com"
+    },
+    {
+      "name": "Accessibility Testing & Auditing",
+      "description": "Comprehensive mobile app accessibility testing to enhance usability across iOS, Android, and visionOS platforms. Includes testing with assistive technologies like VoiceOver, WCAG compliance review, and optional remediation services to fix accessibility issues found.",
+      "platforms": ["iOS", "Android", "visionOS"],
+      "includes": [
+        "Full accessibility audit",
+        "VoiceOver and assistive technology testing",
+        "WCAG compliance review",
+        "Optional remediation services"
+      ],
+      "contact": "techopolis@techopolisonline.com",
+      "bookingUrl": "https://techopolis.app/user-experience-details"
+    },
+    {
+      "name": "User Experience Testing",
+      "description": "User experience testing to evaluate whether products function effectively across all user types. Techopolis tests apps to ensure they work for diverse audiences.",
+      "contact": "techopolis@techopolisonline.com"
+    }
+  ],
+  "courses": [
+    {
+      "name": "SwiftUI Basics",
+      "description": "Build SwiftUI apps using the iPad and Swift Playgrounds. Learn the fundamentals of SwiftUI development.",
+      "price": "Free",
+      "url": "https://techopolis.app/courses"
+    },
+    {
+      "name": "Practical Python",
+      "description": "Learn Python with a focus on automation and task completion. Practical, hands-on approach to Python programming.",
+      "price": "Free",
+      "url": "https://techopolis.app/courses"
+    },
+    {
+      "name": "Apple App Development",
+      "description": "Comprehensive course for developing applications across Apple platforms.",
+      "price": "Pre-Order",
+      "status": "Coming Soon - Launching September",
+      "url": "https://techopolis.app/courses"
+    },
+    {
+      "name": "Accessing the Mac Terminal Accessibly",
+      "description": "Learn to use the Mac Terminal with VoiceOver screen reader. Perfect for blind and low-vision developers getting started with the command line.",
+      "price": "Free",
+      "url": "https://techopolis.app/courses"
+    },
+    {
+      "name": "Techopolis Courses All Access",
+      "description": "Unlock all courses provided by Techopolis Online Solutions through a subscription.",
+      "type": "Subscription",
+      "url": "https://techopolis.app/courses"
+    }
+  ],
+  "social": {
+    "discord": {
+      "url": "https://discord.gg/fqgx5jAG",
+      "description": "Join the Techopolis Discord community with over 100 members to discuss technology and development."
+    },
+    "mastodon": {
+      "url": "https://techopolis.social",
+      "description": "Follow Techopolis on Mastodon for updates and community discussions."
+    },
+    "twitter": {
+      "handle": "@techopolis",
+      "description": "Follow Techopolis on X (formerly Twitter) for announcements and updates."
+    },
+    "github": {
+      "url": "https://github.com/Techopolis-Online/",
+      "description": "Explore Techopolis open-source projects on GitHub, including educational resources and developer documentation.",
+      "repositories": 9
+    },
+    "email": "techopolis@techopolisonline.com",
+    "website": "https://techopolis.app"
+  }
+}

@@ -1,0 +1,355 @@
+/* ============================================
+   Techopolis Help Chatbot
+   Accessible floating help widget
+   ============================================ */
+
+/* Floating action button */
+.help-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 900;
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    border-radius: 28px;
+    padding: 12px 24px;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    font-family: inherit;
+    min-height: 44px;
+}
+
+.help-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.help-fab:focus-visible {
+    outline: 2px solid var(--accent-primary, #6366f1);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+}
+
+/* Modal dialog - positioned bottom-right */
+.help-modal {
+    position: fixed;
+    bottom: 80px;
+    right: 24px;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 0;
+    width: 420px;
+    max-width: calc(100vw - 48px);
+    height: 560px;
+    max-height: calc(100vh - 120px);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    color: var(--text-primary);
+}
+
+.help-modal::backdrop {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.help-modal-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Header */
+.help-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.help-modal-header h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin: 0;
+    padding-right: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Override absolute positioning from styles.css for the help close button */
+.help-modal .btn-close {
+    position: static;
+    flex-shrink: 0;
+}
+
+/* Messages area */
+.help-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* Message bubbles */
+.help-message {
+    max-width: 85%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 16px;
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.help-message:focus-visible {
+    outline: 2px solid var(--accent-primary, #6366f1);
+    outline-offset: 2px;
+}
+
+.help-user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #007AFF, #5856D6);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.help-bot {
+    align-self: flex-start;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 4px;
+    max-width: 90%;
+}
+
+/* Visually hidden role heading for user messages — screen readers navigate via h3 */
+.help-message-role {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Agent name heading — visible and navigable as h3 */
+.help-bot-header {
+    font-size: 0.75rem;
+    color: var(--accent-primary-hover);
+    font-weight: 600;
+    margin: 0 0 var(--spacing-xs);
+    padding: 0;
+}
+
+/* Message text formatting */
+.help-message-text p {
+    margin: 0 0 var(--spacing-xs);
+}
+
+.help-message-text p:last-child {
+    margin-bottom: 0;
+}
+
+.help-message-text a {
+    color: var(--accent-primary-hover);
+    text-decoration: underline;
+}
+
+.help-user .help-message-text a {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.help-message-text code {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.help-message-text strong {
+    font-weight: 600;
+}
+
+.help-message-text ul,
+.help-message-text ol {
+    padding-left: var(--spacing-lg);
+    margin: var(--spacing-xs) 0;
+}
+
+/* Follow-up buttons */
+.help-followups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+}
+
+.help-followup-btn {
+    background: var(--bg-active);
+    border: 1px solid var(--border-color);
+    color: var(--accent-primary-hover);
+    padding: 10px 16px;
+    border-radius: 16px;
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+    font-family: inherit;
+    font-weight: 500;
+    min-height: 44px;
+    line-height: 1.3;
+}
+
+.help-followup-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-primary);
+}
+
+.help-followup-btn:focus-visible {
+    outline: 2px solid var(--accent-primary, #6366f1);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+}
+
+.help-followup-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Input form */
+.help-form {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.help-input {
+    flex: 1;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    min-height: 44px;
+}
+
+.help-input::placeholder {
+    color: var(--text-muted);
+}
+
+.help-input:focus-visible {
+    outline: 2px solid var(--accent-primary, #6366f1);
+    outline-offset: 2px;
+    border-color: var(--accent-primary);
+}
+
+.help-send {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Typing indicator */
+.help-typing {
+    display: inline-flex;
+    gap: 4px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    align-self: flex-start;
+    background: var(--bg-tertiary);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 4px;
+}
+
+.help-typing span {
+    width: 6px;
+    height: 6px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: help-bounce 1.4s infinite ease-in-out both;
+}
+
+.help-typing span:nth-child(1) { animation-delay: -0.32s; }
+.help-typing span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes help-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* Streaming cursor */
+.help-bot.streaming .help-message-text::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    animation: blink-cursor 0.8s steps(2) infinite;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .help-modal {
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        height: 85vh;
+        max-height: 85vh;
+        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    }
+
+    .help-fab {
+        bottom: 16px;
+        right: 16px;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .help-typing span {
+        animation: none;
+        opacity: 0.6;
+    }
+
+    .help-bot.streaming .help-message-text::after {
+        animation: none;
+        opacity: 0.8;
+    }
+
+    .help-fab {
+        transition: none;
+    }
+
+    .help-fab:hover {
+        transform: none;
+    }
+}

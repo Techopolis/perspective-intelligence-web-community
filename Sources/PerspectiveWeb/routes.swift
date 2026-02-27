@@ -7,6 +7,16 @@ struct WebSocketMessage: Content {
     var type: String
     var message: MessageDTO?
     var error: String?
+    var promptTokens: Int?
+    var completionTokens: Int?
+
+    init(type: String, message: MessageDTO? = nil, error: String? = nil, promptTokens: Int? = nil, completionTokens: Int? = nil) {
+        self.type = type
+        self.message = message
+        self.error = error
+        self.promptTokens = promptTokens
+        self.completionTokens = completionTokens
+    }
 }
 
 /// Context for rendering the main chat view
@@ -25,6 +35,18 @@ func routes(_ app: Application) throws {
     // Health check endpoint (always public)
     app.get("health") { req async -> HTTPStatus in
         .ok
+    }
+
+    // Help chatbot WebSocket (always public)
+    app.webSocket("ws", "help") { req, ws async in
+        let handler = TechopolisHelpHandler(
+            client: req.application.foundationModelsClient,
+            logger: req.logger
+        )
+
+        ws.onText { ws, text async in
+            await handler.handleMessage(text, ws: ws)
+        }
     }
     
     if demoMode {

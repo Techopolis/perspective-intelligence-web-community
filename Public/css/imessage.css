@@ -30,9 +30,19 @@
     gap: var(--spacing-xs);
 }
 
-/* Hide role label - bubbles indicate sender */
+/* Visually hide role heading - screen readers still navigate via h3 */
 .message .message-role {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 /* Base bubble style */
@@ -281,6 +291,42 @@
 .btn-send svg {
     width: 18px;
     height: 18px;
+}
+
+/* Copy button alignment per sender */
+.message.user .btn-copy-message {
+    align-self: flex-end;
+}
+
+.message.assistant .btn-copy-message {
+    align-self: flex-start;
+}
+
+/* User bubble overrides for markdown elements */
+.message.user .message-text a {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message.user .message-text a:hover {
+    color: #ffffff;
+}
+
+.message.user .message-text blockquote {
+    border-left-color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message.user .message-text th,
+.message.user .message-text td {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.message.user .message-text th {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.message.user .message-text hr {
+    border-top-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Accessible focus indicators */

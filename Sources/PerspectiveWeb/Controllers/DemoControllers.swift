@@ -107,7 +107,15 @@ struct DemoMessageController: RouteCollection {
         }
         
         let input = try req.content.decode(CreateMessageDTO.self)
-        
+
+        // Determine effective agent
+        let agentId: String
+        if let requested = input.agent, !requested.isEmpty {
+            agentId = requested
+        } else {
+            agentId = await req.foundationModels.classify(message: input.content)
+        }
+
         // Save user message
         let userMessage = Message(chatID: chatID, role: "user", content: input.content)
         try await userMessage.save(on: req.db)
@@ -132,7 +140,9 @@ struct DemoMessageController: RouteCollection {
             .all()
         
         // Call Foundation Models via Mac server
-        let messageHistory = allMessages.map { (role: $0.role, content: $0.content) }
+        let rawHistory = allMessages.map { (role: $0.role, content: $0.content) }
+        let systemMsg = (role: "system", content: FoundationModelsClient.systemPrompt(for: agentId))
+        let messageHistory = [systemMsg] + rawHistory
         
         let aiResponse: String
         do {

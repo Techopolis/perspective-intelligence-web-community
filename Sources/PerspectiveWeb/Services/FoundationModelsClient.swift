@@ -41,11 +41,25 @@ final class FoundationModelsClient: Sendable {
         var model: String?
         var message: OllamaMessage?
         var done: Bool?
+        var promptEvalCount: Int?
+        var evalCount: Int?
 
         struct OllamaMessage: Content {
             var role: String
             var content: String
         }
+
+        enum CodingKeys: String, CodingKey {
+            case model, message, done
+            case promptEvalCount = "prompt_eval_count"
+            case evalCount = "eval_count"
+        }
+    }
+
+    /// Events emitted by the streaming API
+    enum StreamEvent {
+        case content(String)
+        case done(promptTokens: Int?, completionTokens: Int?)
     }
 
     /// Error response from Ollama
@@ -95,8 +109,8 @@ final class FoundationModelsClient: Sendable {
     }
 
     /// Send a streaming chat completion request to Ollama.
-    /// Returns an AsyncThrowingStream that yields content tokens as they arrive.
-    func completeStreaming(messages: [(role: String, content: String)]) -> AsyncThrowingStream<String, Error> {
+    /// Returns an AsyncThrowingStream that yields `StreamEvent` values: content chunks and a final done event with token counts.
+    func completeStreaming(messages: [(role: String, content: String)]) -> AsyncThrowingStream<StreamEvent, Error> {
         let request = OllamaChatRequest(
             model: model,
             messages: messages.map { .init(role: $0.role, content: $0.content) },
@@ -141,9 +155,13 @@ final class FoundationModelsClient: Sendable {
 
                             let decoded = try JSONDecoder().decode(OllamaChatResponse.self, from: data)
                             if let content = decoded.message?.content, !content.isEmpty {
-                                continuation.yield(content)
+                                continuation.yield(.content(content))
                             }
                             if decoded.done == true {
+                                continuation.yield(.done(
+                                    promptTokens: decoded.promptEvalCount,
+                                    completionTokens: decoded.evalCount
+                                ))
                                 continuation.finish()
                                 return
                             }
@@ -172,6 +190,47 @@ final class FoundationModelsClient: Sendable {
         } catch {
             return false
         }
+    }
+
+    /// Returns the system prompt string for a given agent ID.
+    static func systemPrompt(for agentId: String) -> String {
+        switch agentId {
+        case "code":
+            return "You are a code generation and debugging expert. Write correct, clean code with brief explanations. Always use appropriate code blocks."
+        case "writer":
+            return "You are a professional writing assistant. Help with writing, editing, proofreading, and improving clarity and style."
+        case "summarizer":
+            return "You are a summarization expert. Provide clear, concise summaries that capture the key points and main ideas."
+        case "translator":
+            return "You are a translation expert fluent in all languages. Translate accurately while preserving tone and meaning."
+        case "creative":
+            return "You are a creative brainstorming partner. Generate imaginative ideas, stories, and creative content."
+        case "tutor":
+            return "You are a patient tutor. Explain concepts step by step with clear examples suited to the learner's level."
+        case "accessibility":
+            return "You are an accessibility expert. Review content and code for accessibility issues and provide guidance on WCAG standards, ARIA usage, and inclusive design."
+        default:
+            return "You are a helpful, knowledgeable assistant. Be clear, accurate, and concise."
+        }
+    }
+
+    /// Run a quick non-streaming classification to determine the best agent for a message.
+    /// Returns one of: general, code, writer, summarizer, translator, creative, tutor, accessibility
+    func classify(message: String) async -> String {
+        let prompt = """
+        You are a routing assistant. Based on the user's message, determine which assistant mode is most appropriate. \
+        Reply with ONLY one word from this exact list, nothing else: general, code, writer, summarizer, translator, creative, tutor, accessibility
+
+        User message: \(message)
+        """
+        let messages: [(role: String, content: String)] = [("user", prompt)]
+        let result = (try? await complete(messages: messages)) ?? "general"
+        let cleaned = result.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let validAgents = ["general", "code", "writer", "summarizer", "translator", "creative", "tutor", "accessibility"]
+        for agent in validAgents {
+            if cleaned.hasPrefix(agent) { return agent }
+        }
+        return "general"
     }
 }
 

@@ -3,6 +3,7 @@ import Vapor
 /// DTO for creating a new message
 struct CreateMessageDTO: Content {
     var content: String
+    var agent: String?
 }
 
 /// DTO for message response
