@@ -10,3 +10,4 @@ db.sqlite
 .env.*
 !.env.example
 default.profraw
+firebase-service-account.json

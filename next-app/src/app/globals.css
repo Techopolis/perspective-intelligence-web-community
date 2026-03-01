@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-main-bg: #0d0d0d;
+  --color-main-alt: #121212;
+  --color-sidebar-top: #0a1628;
+  --color-sidebar-bottom: #0f3a4a;
+  --color-cream: #f5f0e6;
+  --color-cream-light: #faf6eb;
+  --color-cream-hover: #ebe5d9;
+  --color-text-muted: #9ca3af;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-playfair), Georgia, serif;
+}
+
+@layer base {
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px #22d3ee, 0 0 0 5px #1a1a1a;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px #22d3ee, 0 0 0 5px #1a1a1a;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    z-index: 9999;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: white;
+    background-color: #0f3a4a;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .skip-link:focus {
+    clip: auto;
+    height: auto;
+    width: auto;
+    margin: 0;
+    overflow: visible;
+    white-space: normal;
+  }
+}
+
+@layer components {
+  .btn-cream {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: all 200ms;
+    background-color: #f5f0e6;
+    color: #1a1a1a;
+  }
+
+  .btn-cream:hover {
+    background-color: #ebe5d9;
+    transform: translateY(-1px);
+  }
+
+  .btn-cream:active {
+    transform: translateY(0);
+  }
+
+  .btn-cream:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    transform: none;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    color: white;
+    transition: background-color 200ms;
+  }
+
+  .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Sender heading inside message bubbles */
+  .message-role {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+
+  .bubble-user .message-role {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .bubble-assistant .message-role {
+    color: #9ca3af;
+  }
+
+  /* iMessage-style chat bubbles */
+  .bubble-user {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+
+  .bubble-assistant {
+    background-color: #2a2a2a;
+    color: #e5e5e5;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+
+  .bubble-assistant pre {
+    background-color: #1a1a1a;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+  }
+
+  .bubble-assistant code {
+    font-size: 0.875rem;
+    color: inherit;
+  }
+
+  .bubble-assistant p {
+    margin: 0 0 0.5rem;
+  }
+
+  .bubble-assistant p:last-child {
+    margin-bottom: 0;
+  }
+
+  .bubble-assistant h1,
+  .bubble-assistant h2,
+  .bubble-assistant h3,
+  .bubble-assistant h4,
+  .bubble-assistant h5,
+  .bubble-assistant h6 {
+    color: #ffffff;
+    font-weight: 600;
+    margin: 0.75rem 0 0.25rem;
+  }
+
+  .bubble-assistant ul,
+  .bubble-assistant ol {
+    color: inherit;
+    padding-left: 1.25rem;
+    margin: 0.25rem 0 0.5rem;
+  }
+
+  .bubble-assistant li {
+    margin: 0.125rem 0;
+  }
+
+  .bubble-assistant strong {
+    color: #ffffff;
+  }
+
+  .bubble-assistant blockquote {
+    border-left: 3px solid #4b5563;
+    padding-left: 0.75rem;
+    color: #9ca3af;
+    margin: 0.5rem 0;
+  }
+}
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    padding: 0;
+    clip: rect(0, 0, 0, 0);
+  }
+}
