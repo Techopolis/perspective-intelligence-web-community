@@ -81,6 +81,12 @@ Browser <-> Next.js App (Auth, UI, API) <-> Perspective Server (Foundation Model
 - **SSE streaming** for real-time AI responses
 - **Tailwind CSS v4** dark theme
 
+## Contributing
+
+We welcome contributions. Check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started. Look for issues labeled [`good first issue`](https://github.com/Techopolis/perspective-intelligence-community/labels/good%20first%20issue) if you are new.
+
+If this project is useful to you, give it a star. It helps others find it.
+
 ## License
 
 MIT License
