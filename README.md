@@ -83,7 +83,7 @@ Browser <-> Next.js App (Auth, UI, API) <-> Perspective Server (Foundation Model
 
 ## Contributing
 
-We welcome contributions. Check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started. Look for issues labeled [`good first issue`](https://github.com/Techopolis/perspective-intelligence-community/labels/good%20first%20issue) if you are new.
+We want contributors. If you have an idea, raise a PR. Check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 If this project is useful to you, give it a star. It helps others find it.
 
