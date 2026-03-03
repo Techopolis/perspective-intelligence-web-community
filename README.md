@@ -1,51 +1,58 @@
 # Perspective Intelligence Web (Community Edition)
 
-Apple Intelligence does not have to be terrible. It actually works. You just need the right interface.
+Apple Intelligence is powerful. Most people just do not have the right interface for it.
 
-[Perspective Intelligence](https://apps.apple.com/kz/app/perspective-intelligence/id6448894750) is our AI chat app on the App Store. **Perspective Intelligence Web is the open-source web version.** It runs in any browser on any platform. Windows. Android. Linux. Chromebooks. Anything.
+This is that interface. An open-source AI chat app that runs in any browser on any device. Windows. Android. Linux. Chromebooks. Anything. All powered by Apple Foundation Models running locally on your Mac.
 
-All you need is one Mac with Apple Silicon running [Perspective Server](https://github.com/Techopolis/Perspective-Server) somewhere on your network. Every device in your home or office can connect to it and use Apple Foundation Models. No cloud. No data leaving your network. Just your Mac doing the work.
+<!-- TODO: Add screenshot or demo GIF of the chat interface here -->
+<!-- ![Perspective Intelligence Web](screenshot.png) -->
+
+## Why This Exists
+
+We built [Perspective Intelligence](https://apps.apple.com/kz/app/perspective-intelligence/id6448894750) as a native Mac and iOS app. People loved it. But not everyone has a Mac in front of them all day.
+
+Your Mac is already running Apple Intelligence. It is sitting there with a powerful on-device model doing nothing most of the time. Perspective Intelligence Web puts that power in a browser so every device in your home or office can use it. No cloud. No API keys. No data leaving your network. Just your Mac doing the work.
 
 ## Features
 
-- On-device AI chat via Apple Foundation Models
+- Chat with Apple Foundation Models from any browser on any device
 - 8 specialized AI agents (general, code, writer, summarizer, translator, creative, tutor, accessibility)
 - Auto-classifies conversations to the right agent
 - Streaming responses in real time
-- Dark theme, iMessage-style chat interface
-- Email/password authentication
-- Optional Apple Sign-In
-- Password reset via email (optional)
-- More coming soon (custom agents, and more)
+- Dark theme with iMessage-style chat interface
+- Email/password authentication with optional Apple Sign-In
+- Password reset via email
 
-## You Need the Server
+## How It Works
 
-This web app is a frontend. To power the AI, you need [Perspective Server](https://github.com/Techopolis/Perspective-Server) running on a Mac with Apple Silicon. It is a menubar app that runs Apple Foundation Models locally on your machine. No cloud. No API keys. Just your Mac.
+```
+Any Device (Browser) --> Next.js App (Auth + UI) --> Perspective Server (your Mac)
+                              |
+                         PostgreSQL
+```
 
-Download the latest release: **https://github.com/Techopolis/Perspective-Server/releases**
-
-Want to contribute to the server? The source is at **https://github.com/Techopolis/Perspective-Server**
-
-## Requirements
-
-- A Mac with Apple Silicon running macOS 26+ (for Perspective Server)
-- PostgreSQL database (Neon free tier works)
-- Node.js 20+
+The web app handles authentication and the chat UI. The AI runs on your Mac through [Perspective Server](https://github.com/Techopolis/Perspective-Server), a menu bar app that exposes Apple Foundation Models as a local API.
 
 ## Quick Start
+
+### 1. Start the Server
+
+Download and run [Perspective Server](https://github.com/Techopolis/Perspective-Server/releases) on your Mac. It appears in your menu bar and starts automatically.
+
+### 2. Set Up the Web App
 
 ```bash
 cd next-app
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` with your database URL and generate a secret:
+Edit `.env.local` with your database URL and generate a session secret:
 
 ```bash
 openssl rand -base64 32
 ```
 
-Install dependencies and start:
+### 3. Install and Run
 
 ```bash
 npm install
@@ -54,6 +61,12 @@ npm run dev
 ```
 
 Open http://localhost:3000, create an account, and start chatting.
+
+## Requirements
+
+- A Mac with Apple Silicon running macOS 26+ (for Perspective Server)
+- PostgreSQL database (Neon free tier works)
+- Node.js 20+
 
 ## Environment Variables
 
@@ -67,15 +80,9 @@ Open http://localhost:3000, create an account, and start chatting.
 | `AUTH_APPLE_SECRET` | No | Apple OAuth client secret |
 | `AWS_ACCESS_KEY_ID` | No | For password reset emails via SES |
 
-## Architecture
+## Tech Stack
 
-```
-Browser <-> Next.js App (Auth, UI, API) <-> Perspective Server (Foundation Models on your Mac)
-                |
-           PostgreSQL
-```
-
-- **Next.js 16** App Router with TypeScript
+- **Next.js 16** with App Router and TypeScript
 - **Auth.js v5** (JWT sessions, Credentials + optional Apple OAuth)
 - **Drizzle ORM** with Neon PostgreSQL
 - **SSE streaming** for real-time AI responses
