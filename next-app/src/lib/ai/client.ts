@@ -2,7 +2,7 @@
 // Calls the Perspective Intelligence Local API at POST /v1/chat/completions
 
 const AI_SERVER_URL =
-  process.env.AI_SERVER_URL || "http://localhost:11435";
+  process.env.AI_SERVER_URL || "http://localhost:11434";
 
 // Max concurrent requests to the on-device model (prevents overload with multiple users)
 const MAX_CONCURRENT = parseInt(process.env.AI_MAX_CONCURRENT || "3", 10);

@@ -1,10 +1,10 @@
 # Perspective Intelligence Web (Community Edition)
 
-A private, accessible AI chat interface powered by Apple Foundation Models. Self-host on your own Mac with nothing more than a PostgreSQL database and a secret key.
+Apple Intelligence does not have to be terrible. It actually works. You just need the right interface.
 
-## What This Is
+Perspective Intelligence is a self-hosted AI chat app powered by Apple Foundation Models running on your own Mac. Private. Fast. No subscriptions. No cloud. No data leaving your machine.
 
-Perspective Intelligence Web is a web client for on-device AI. Conversations are processed by Apple Foundation Models running locally on your Mac. No data leaves your network. No cloud AI subscriptions required.
+This is the web frontend. Pair it with [Perspective Server](https://github.com/Techopolis/Perspective-Server) and you have a full AI chat system running entirely on hardware you own.
 
 ## Features
 
