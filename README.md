@@ -22,7 +22,9 @@ Perspective Intelligence Web is a web client for on-device AI. Conversations are
 
 This web app is a frontend. To power the AI, you need [Perspective Server](https://github.com/Techopolis/Perspective-Server) running on a Mac with Apple Silicon. It is a menubar app that runs Apple Foundation Models locally on your machine. No cloud. No API keys. Just your Mac.
 
-Get it here: **https://github.com/Techopolis/Perspective-Server**
+Download the latest release: **https://github.com/Techopolis/Perspective-Server/releases**
+
+Want to contribute to the server? The source is at **https://github.com/Techopolis/Perspective-Server**
 
 ## Requirements
 
