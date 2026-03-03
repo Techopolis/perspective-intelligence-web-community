@@ -16,7 +16,7 @@ Perspective Intelligence Web is a web client for on-device AI. Conversations are
 - SSE streaming responses
 - Password reset via email (AWS SES, optional)
 - Dark theme, iMessage-style chat interface
-- Fully accessible (WCAG compliant, screen reader tested)
+- Fully accessible, built for everyone
 
 ## Requirements
 
@@ -74,15 +74,13 @@ Browser <-> Next.js App (Auth, UI, API) <-> Perspective Intelligence Server (Fou
 - **SSE streaming** for real-time AI responses
 - **Tailwind CSS v4** dark theme
 
-## Accessibility
-
-Built with accessibility as a core requirement:
+## Built for Everyone
 
 - Full keyboard navigation with visible focus indicators
-- Screen reader compatible with ARIA labels and live regions
+- Screen reader support throughout
 - Reduced motion support
-- Minimum 44px touch targets
-- Semantic HTML throughout
+- Large touch targets
+- Works however you use the web
 
 ## License
 
