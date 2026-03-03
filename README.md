@@ -18,10 +18,15 @@ Perspective Intelligence Web is a web client for on-device AI. Conversations are
 - Dark theme, iMessage-style chat interface
 - Fully accessible, built for everyone
 
+## You Need the Server
+
+This web app is a frontend. To power the AI, you need [Perspective Server](https://github.com/Techopolis/Perspective-Server) running on a Mac with Apple Silicon. It is a menubar app that runs Apple Foundation Models locally on your machine. No cloud. No API keys. Just your Mac.
+
+Get it here: **https://github.com/Techopolis/Perspective-Server**
+
 ## Requirements
 
-- macOS 26+ with Apple Silicon (for the AI server)
-- [Perspective Intelligence Server](https://github.com/Techopolis/Perspective-Intelligence-Server) (menubar app, runs Foundation Models locally)
+- A Mac with Apple Silicon running macOS 26+ (for Perspective Server)
 - PostgreSQL database (Neon free tier works)
 - Node.js 20+
 
@@ -55,7 +60,7 @@ Open http://localhost:3000, create an account, and start chatting.
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `NEXTAUTH_SECRET` | Yes | Random secret for session encryption |
 | `AUTH_TRUST_HOST` | Yes | Set to `true` for multi-host access |
-| `AI_SERVER_URL` | Yes | Perspective Intelligence Server URL (default: `http://localhost:11434`) |
+| `AI_SERVER_URL` | Yes | Perspective Server URL (default: `http://localhost:11434`) |
 | `AUTH_APPLE_ID` | No | Apple OAuth client ID |
 | `AUTH_APPLE_SECRET` | No | Apple OAuth client secret |
 | `AWS_ACCESS_KEY_ID` | No | For password reset emails via SES |
@@ -63,7 +68,7 @@ Open http://localhost:3000, create an account, and start chatting.
 ## Architecture
 
 ```
-Browser <-> Next.js App (Auth, UI, API) <-> Perspective Intelligence Server (Foundation Models)
+Browser <-> Next.js App (Auth, UI, API) <-> Perspective Server (Foundation Models on your Mac)
                 |
            PostgreSQL
 ```
