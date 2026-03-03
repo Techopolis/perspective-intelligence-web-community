@@ -3,8 +3,8 @@ import { authenticateRequest, isAuthError } from "@/lib/auth/authenticate";
 import { db, users } from "@/lib/db";
 import { eq } from "drizzle-orm";
 
-export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+export async function GET() {
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   return NextResponse.json({
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const body = await request.json();

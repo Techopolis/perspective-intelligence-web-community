@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
-import { AuthProvider } from "@/hooks/use-auth";
+import { useAuth, AuthProvider } from "@/hooks/use-auth";
 
 function OnboardingContent() {
   const router = useRouter();
-  const { getIdToken } = useAuth();
+  const { refreshUser } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [familiarity, setFamiliarity] = useState("");
@@ -41,19 +40,9 @@ function OnboardingContent() {
     setError(null);
 
     try {
-      const token = await getIdToken();
-      if (!token) {
-        setError("Not authenticated. Please sign in again.");
-        setIsSubmitting(false);
-        return;
-      }
-
       const response = await fetch("/api/onboarding", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           goals: selectedGoals.join(","),
           aiFamiliarity: familiarity,
@@ -64,6 +53,8 @@ function OnboardingContent() {
         throw new Error("Failed to save onboarding data");
       }
 
+      // Refresh session so JWT picks up onboardingCompleted=true
+      await refreshUser();
       router.push("/chat");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

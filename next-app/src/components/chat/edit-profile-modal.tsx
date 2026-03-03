@@ -30,10 +30,10 @@ export function EditProfileModal({
   onClose: () => void;
   returnFocusRef?: RefObject<HTMLElement | null>;
 }) {
-  const { user, dbUser, getIdToken } = useAuth();
+  const { user, dbUser } = useAuth();
   const BIO_MAX = 500;
   const [name, setName] = useState(
-    dbUser?.name || user?.displayName || ""
+    dbUser?.name || user?.name || ""
   );
   const [pictureUrl, setPictureUrl] = useState(dbUser?.pictureUrl || "");
   const [bio, setBio] = useState(dbUser?.bio || "");
@@ -165,19 +165,9 @@ export function EditProfileModal({
     setStatusMessage("");
 
     try {
-      const token = await getIdToken();
-      if (!token) {
-        setError("Not authenticated");
-        setIsSaving(false);
-        return;
-      }
-
       const res = await fetch("/api/users/profile", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmed, pictureUrl: pictureUrl || "", bio: bio.trim() }),
       });
 

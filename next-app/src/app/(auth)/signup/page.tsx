@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 
+const appleEnabled = !!(
+  process.env.NEXT_PUBLIC_AUTH_APPLE_ENABLED === "true"
+);
+
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,61 +41,26 @@ function SignupForm() {
 
     setIsSubmitting(true);
 
-    const { user, error } = await signUpWithEmail(email, password);
+    const { error } = await signUpWithEmail(email, password);
 
     if (error) {
-      setError(getErrorMessage(error));
+      setError(error.message);
       setIsSubmitting(false);
       return;
     }
 
-    if (user) {
-      // Sync user to database
-      const token = await user.getIdToken();
-      const syncResult = await fetch("/api/auth/sync", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((r) => r.json())
-        .catch(() => ({ isNew: true }));
-
-      // New users go to onboarding
-      if (syncResult.isNew) {
-        router.push("/onboarding");
-      } else {
-        router.push(redirectTo);
-      }
-    }
+    // New users go to onboarding
+    router.push("/onboarding");
   };
 
   const handleAppleSignIn = async () => {
     if (isAppleLoading) return;
     setError(null);
     setIsAppleLoading(true);
-    sessionStorage.setItem("auth_redirect", redirectTo);
-    const { user, error } = await signInWithApple();
-    if (user || error) {
-      setIsAppleLoading(false);
-      sessionStorage.removeItem("auth_redirect");
-    }
+    const { error } = await signInWithApple();
+    setIsAppleLoading(false);
     if (error) {
       setError(error.message);
-      return;
-    }
-    if (user) {
-      const token = await user.getIdToken();
-      const syncResult = await fetch("/api/auth/sync", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((r) => r.json())
-        .catch(() => ({ isNew: true }));
-
-      if (syncResult.isNew) {
-        router.push("/onboarding");
-      } else {
-        router.push(redirectTo);
-      }
     }
   };
 
@@ -122,6 +91,7 @@ function SignupForm() {
 
       {error && (
         <div
+          id="signup-error"
           className="flex items-start gap-3 rounded-lg p-4 text-sm"
           style={{
             backgroundColor: "rgba(239, 68, 68, 0.1)",
@@ -149,42 +119,46 @@ function SignupForm() {
         </div>
       )}
 
-      <div className="space-y-3">
-        <button
-          type="button"
-          onClick={handleAppleSignIn}
-          disabled={isAppleLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isAppleLoading ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          ) : (
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
+      {appleEnabled && (
+        <>
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={handleAppleSignIn}
+              disabled={isAppleLoading}
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-            </svg>
-          )}
-          {isAppleLoading ? "Signing in..." : "Continue with Apple"}
-        </button>
-      </div>
+              {isAppleLoading ? (
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                </svg>
+              )}
+              {isAppleLoading ? "Signing in..." : "Continue with Apple"}
+            </button>
+          </div>
 
-      <div className="relative" aria-hidden="true">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/20" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span
-            className="px-4"
-            style={{ backgroundColor: "#0d0d0d", color: "#9ca3af" }}
-          >
-            Or continue with email
-          </span>
-        </div>
-      </div>
+          <div className="relative" aria-hidden="true">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/20" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span
+                className="px-4"
+                style={{ backgroundColor: "#0d0d0d", color: "#9ca3af" }}
+              >
+                Or continue with email
+              </span>
+            </div>
+          </div>
+        </>
+      )}
 
       <form onSubmit={handleEmailSignUp} className="space-y-4">
         <div>
@@ -203,6 +177,7 @@ function SignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition-colors focus-visible:border-[#22d3ee]"
+            aria-describedby={error ? "signup-error" : undefined}
           />
         </div>
 
@@ -303,23 +278,4 @@ export default function SignupPage() {
       <SignupForm />
     </Suspense>
   );
-}
-
-function getErrorMessage(error: Error): string {
-  const message = error.message;
-
-  if (message.includes("email-already-in-use")) {
-    return "An account with this email already exists.";
-  }
-  if (message.includes("invalid-email")) {
-    return "Please enter a valid email address.";
-  }
-  if (message.includes("weak-password")) {
-    return "Password is too weak. Please use a stronger password.";
-  }
-  if (message.includes("popup-closed")) {
-    return "Sign-up was cancelled. Please try again.";
-  }
-
-  return "An error occurred. Please try again.";
 }

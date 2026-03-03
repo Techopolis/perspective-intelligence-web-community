@@ -7,7 +7,6 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { useAuth } from "@/hooks/use-auth";
 
 interface ChatSummary {
   id: string;
@@ -47,7 +46,6 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const { getIdToken } = useAuth();
   const [chats, setChats] = useState<ChatSummary[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -58,17 +56,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
 
-  const getAuthHeaders = useCallback(async () => {
-    const token = await getIdToken();
-    if (!token) throw new Error("Not authenticated");
-    return { Authorization: `Bearer ${token}` };
-  }, [getIdToken]);
-
   const loadChats = useCallback(async () => {
     setIsLoadingChats(true);
     try {
-      const headers = await getAuthHeaders();
-      const response = await fetch("/api/chats", { headers });
+      const response = await fetch("/api/chats");
       if (response.ok) {
         const data = await response.json();
         setChats(data);
@@ -78,7 +69,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoadingChats(false);
     }
-  }, [getAuthHeaders]);
+  }, []);
 
   const selectChat = useCallback(
     async (chatId: string) => {
@@ -86,10 +77,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setIsLoadingMessages(true);
       setMessages([]);
       try {
-        const headers = await getAuthHeaders();
-        const response = await fetch(`/api/chats/${chatId}/messages`, {
-          headers,
-        });
+        const response = await fetch(`/api/chats/${chatId}/messages`);
         if (response.ok) {
           const data = await response.json();
           setMessages(data);
@@ -100,15 +88,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setIsLoadingMessages(false);
       }
     },
-    [getAuthHeaders]
+    []
   );
 
   const createChat = useCallback(async (): Promise<string | null> => {
     try {
-      const headers = await getAuthHeaders();
       const response = await fetch("/api/chats", {
         method: "POST",
-        headers: { ...headers, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
       if (response.ok) {
         const chat = await response.json();
@@ -121,15 +108,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.error("Error creating chat:", error);
     }
     return null;
-  }, [getAuthHeaders]);
+  }, []);
 
   const deleteChat = useCallback(
     async (chatId: string) => {
       try {
-        const headers = await getAuthHeaders();
         const response = await fetch(`/api/chats/${chatId}`, {
           method: "DELETE",
-          headers,
         });
         if (response.ok) {
           setChats((prev) => prev.filter((c) => c.id !== chatId));
@@ -142,7 +127,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         console.error("Error deleting chat:", error);
       }
     },
-    [getAuthHeaders, activeChatId]
+    [activeChatId]
   );
 
   const sendMessage = useCallback(
@@ -170,10 +155,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setStreamingContent("");
 
       try {
-        const headers = await getAuthHeaders();
         const response = await fetch(`/api/chat/${chatId}/stream`, {
           method: "POST",
-          headers: { ...headers, "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             content,
             agent: selectedAgent || undefined,
@@ -256,7 +240,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setActiveAgent(null);
       }
     },
-    [activeChatId, createChat, getAuthHeaders, selectedAgent, chats]
+    [activeChatId, createChat, selectedAgent, chats]
   );
 
   return (

@@ -28,7 +28,7 @@ export default function ProfilePage() {
   const editButtonRef = useRef<HTMLButtonElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  const displayName = dbUser?.name || user?.displayName || "User";
+  const displayName = dbUser?.name || user?.name || "User";
   const email = dbUser?.email || user?.email || "";
   const pictureUrl = dbUser?.pictureUrl || null;
   const bio = dbUser?.bio || null;

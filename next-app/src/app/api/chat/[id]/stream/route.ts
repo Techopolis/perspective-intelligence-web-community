@@ -12,7 +12,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const { id } = await params;

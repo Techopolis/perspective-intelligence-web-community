@@ -4,10 +4,10 @@ import { db, chats, messages } from "@/lib/db";
 import { eq, and, sql } from "drizzle-orm";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const { id } = await params;
@@ -36,7 +36,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const { id } = await params;
@@ -63,10 +63,10 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const { id } = await params;

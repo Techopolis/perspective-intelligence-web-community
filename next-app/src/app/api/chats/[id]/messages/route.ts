@@ -5,10 +5,10 @@ import { eq, and, asc } from "drizzle-orm";
 import { complete, classify, systemPrompt } from "@/lib/ai/client";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const { id } = await params;
@@ -35,7 +35,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const { id } = await params;

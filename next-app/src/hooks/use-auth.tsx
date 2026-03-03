@@ -3,25 +3,10 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   useCallback,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
-import {
-  User,
-  onAuthChange,
-  signInWithApple,
-  signInWithEmail,
-  signUpWithEmail,
-  signOut,
-  getIdToken,
-  checkRedirectResult,
-  refreshSession,
-  getCurrentUser,
-  reloadCurrentUser,
-} from "@/lib/firebase/client";
+import { SessionProvider, useSession, signIn, signOut as nextAuthSignOut } from "next-auth/react";
 
 export interface DbUser {
   id: string;
@@ -33,148 +18,149 @@ export interface DbUser {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    image?: string | null;
+    onboardingCompleted: boolean;
+    bio: string | null;
+  } | null;
   dbUser: DbUser | null;
   loading: boolean;
-  signInWithApple: () => Promise<{ user: User | null; error: Error | null }>;
+  signInWithApple: () => Promise<{ error: Error | null }>;
   signInWithEmail: (
     email: string,
     password: string
-  ) => Promise<{ user: User | null; error: Error | null }>;
+  ) => Promise<{ error: Error | null }>;
   signUpWithEmail: (
     email: string,
     password: string
-  ) => Promise<{ user: User | null; error: Error | null }>;
+  ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<{ error: Error | null }>;
-  getIdToken: (forceRefresh?: boolean) => Promise<string | null>;
-  getCurrentUser: () => User | null;
   refreshUser: () => Promise<void>;
-  refreshDbUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [dbUser, setDbUser] = useState<DbUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  const router = useRouter();
+function AuthContextProvider({ children }: { children: ReactNode }) {
+  const { data: session, status, update } = useSession();
+  const loading = status === "loading";
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const user = session?.user ?? null;
 
-  useEffect(() => {
-    if (!mounted) return;
-
-    async function handleRedirectResult() {
-      const { user, error } = await checkRedirectResult();
-      if (error) {
-        console.error("Redirect auth error:", error);
+  // Map session user to DbUser shape for backward compat
+  const dbUser: DbUser | null = user
+    ? {
+        id: user.id,
+        name: user.name ?? "",
+        email: user.email ?? "",
+        pictureUrl: user.image ?? null,
+        bio: user.bio ?? null,
+        createdAt: "",
       }
-      if (user) {
-        const storedRedirect = sessionStorage.getItem("auth_redirect");
-        sessionStorage.removeItem("auth_redirect");
-        const safeRedirect =
-          storedRedirect &&
-          storedRedirect.startsWith("/") &&
-          !storedRedirect.startsWith("//")
-            ? storedRedirect
-            : "/chat";
-        router.push(safeRedirect);
-      }
-    }
+    : null;
 
-    handleRedirectResult();
-  }, [mounted, router]);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    const unsubscribe = onAuthChange((user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [mounted]);
-
-  useEffect(() => {
-    if (!mounted || !user) return;
-
-    const refreshInterval = setInterval(() => {
-      refreshSession();
-    }, 30 * 60 * 1000);
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && user) {
-        refreshSession();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      clearInterval(refreshInterval);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [mounted, user]);
-
-  const refreshUser = async () => {
-    const refreshedUser = await reloadCurrentUser();
-    if (refreshedUser) {
-      setUser(refreshedUser);
-    }
-  };
-
-  const fetchDbUser = useCallback(async () => {
+  const handleSignInWithApple = useCallback(async () => {
     try {
-      const token = await getIdToken();
-      if (!token) return;
-      const res = await fetch("/api/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDbUser(data);
-      }
+      await signIn("apple", { redirectTo: "/chat" });
+      return { error: null };
     } catch (error) {
-      console.error("Error fetching DB user:", error);
+      return { error: error as Error };
     }
   }, []);
 
-  // Fetch DB user when Firebase user is available
-  useEffect(() => {
-    if (!mounted || !user) {
-      setDbUser(null);
-      return;
+  const handleSignInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          return { error: new Error(result.error) };
+        }
+
+        return { error: null };
+      } catch (error) {
+        return { error: error as Error };
+      }
+    },
+    []
+  );
+
+  const handleSignUpWithEmail = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          return { error: new Error(data.error || "Registration failed") };
+        }
+
+        // Auto sign-in after registration
+        const signInResult = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (signInResult?.error) {
+          return { error: new Error(signInResult.error) };
+        }
+
+        return { error: null };
+      } catch (error) {
+        return { error: error as Error };
+      }
+    },
+    []
+  );
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await nextAuthSignOut({ redirectTo: "/login" });
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
     }
-    fetchDbUser();
-  }, [mounted, user, fetchDbUser]);
+  }, []);
 
-  // Listen for profile-updated events
-  useEffect(() => {
-    const handler = () => fetchDbUser();
-    window.addEventListener("profile-updated", handler);
-    return () => window.removeEventListener("profile-updated", handler);
-  }, [fetchDbUser]);
+  const refreshUser = useCallback(async () => {
+    await update();
+  }, [update]);
 
-  const value: AuthContextType = {
-    user,
-    dbUser,
-    loading,
-    signInWithApple,
-    signInWithEmail,
-    signUpWithEmail,
-    signOut,
-    getIdToken,
-    getCurrentUser,
-    refreshUser,
-    refreshDbUser: fetchDbUser,
-  };
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        dbUser,
+        loading,
+        signInWithApple: handleSignInWithApple,
+        signInWithEmail: handleSignInWithEmail,
+        signUpWithEmail: handleSignUpWithEmail,
+        signOut: handleSignOut,
+        refreshUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+export function AuthProvider({ children }: { children: ReactNode }) {
+  return (
+    <SessionProvider>
+      <AuthContextProvider>{children}</AuthContextProvider>
+    </SessionProvider>
+  );
 }
 
 export function useAuth() {

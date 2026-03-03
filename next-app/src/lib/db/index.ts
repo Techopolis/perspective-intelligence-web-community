@@ -5,7 +5,7 @@ import * as schema from "./schema";
 let sql: NeonQueryFunction<false, false> | null = null;
 let _db: NeonHttpDatabase<typeof schema> | null = null;
 
-function getDb(): NeonHttpDatabase<typeof schema> {
+export function getDb(): NeonHttpDatabase<typeof schema> {
   if (!_db) {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {

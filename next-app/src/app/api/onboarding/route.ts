@@ -4,7 +4,7 @@ import { db, users } from "@/lib/db";
 import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const body = await request.json();

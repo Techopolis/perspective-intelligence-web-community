@@ -1,154 +1,89 @@
-# Perspective Web
+# Perspective Intelligence Web (Community Edition)
 
-A private, accessible web interface for Apple Foundation Models. Built with Swift and Vapor, designed for on-premises deployment where data privacy is paramount.
+A private, accessible AI chat interface powered by Apple Foundation Models. Self-host on your own Mac with nothing more than a PostgreSQL database and a secret key.
+
+## What This Is
+
+Perspective Intelligence Web is a web client for on-device AI. Conversations are processed by Apple Foundation Models running locally on your Mac. No data leaves your network. No cloud AI subscriptions required.
 
 ## Features
 
-- **Private AI Chat**: Conversations powered by Apple Foundation Models running on your own Mac
-- **iMessage-Style Interface**: Familiar, Apple-centric chat design
-- **Document OCR**: Extract and format text from documents (coming soon)
-- **Image Recognition**: Analyze images with MLX (coming soon)
-- **Auth0 Authentication**: Secure login with Sign in with Apple, Google, or email
-- **Fully Accessible**: WCAG compliant with full screen reader support
+- On-device AI chat via Apple Foundation Models
+- Email/password authentication (Auth.js v5)
+- Optional Apple Sign-In (OAuth)
+- 8 specialized AI agents (general, code, writer, summarizer, translator, creative, tutor, accessibility)
+- Auto-classifies conversations to the right agent
+- SSE streaming responses
+- Password reset via email (AWS SES, optional)
+- Dark theme, iMessage-style chat interface
+- Fully accessible (WCAG compliant, screen reader tested)
 
 ## Requirements
 
-- macOS 14.0+ (for running the server)
-- Swift 6.0+
-- A Mac with Apple Silicon for running Foundation Models
-- Auth0 account (free tier available)
+- macOS 26+ with Apple Silicon (for the AI server)
+- [Perspective Intelligence Server](https://github.com/Techopolis/Perspective-Intelligence-Server) (menubar app, runs Foundation Models locally)
+- PostgreSQL database (Neon free tier works)
+- Node.js 20+
 
 ## Quick Start
 
-### 1. Clone and Setup
+```bash
+cd next-app
+cp .env.local.example .env.local
+```
+
+Edit `.env.local` with your database URL and generate a secret:
 
 ```bash
-git clone https://github.com/your-org/perspective-web.git
-cd perspective-web
-
-# Copy environment template
-cp .env.example .env
+openssl rand -base64 32
 ```
 
-### 2. Configure Auth0
-
-1. Go to [Auth0 Dashboard](https://manage.auth0.com)
-2. Create a new Application (Regular Web Application)
-3. Configure the following settings:
-   - **Allowed Callback URLs**: `http://localhost:8080/auth/callback`
-   - **Allowed Logout URLs**: `http://localhost:8080`
-   - **Allowed Web Origins**: `http://localhost:8080`
-4. Copy your Domain, Client ID, and Client Secret to `.env`
-
-### 3. Configure Foundation Models Server
-
-You need a Mac running the Foundation Models API server. Set the `FOUNDATION_MODELS_URL` in your `.env` file:
+Install dependencies and start:
 
 ```bash
-# Local development
-FOUNDATION_MODELS_URL=http://localhost:8081
-
-# Via Tailscale
-FOUNDATION_MODELS_URL=http://your-mac.tailnet-name.ts.net:8081
+npm install
+npx drizzle-kit push
+npm run dev
 ```
 
-### 4. Run the Server
-
-```bash
-# Build and run
-swift run
-
-# Or with environment file
-source .env && swift run
-```
-
-The server will start at `http://localhost:8080`
-
-## Development
-
-### Project Structure
-
-```
-perspective-web/
-├── Sources/PerspectiveWeb/
-│   ├── Controllers/       # Route handlers
-│   │   ├── AuthController.swift
-│   │   ├── ChatController.swift
-│   │   ├── MessageController.swift
-│   │   └── OnboardingController.swift
-│   ├── Middleware/        # Auth middleware
-│   ├── Models/            # Database models
-│   │   ├── User.swift
-│   │   ├── Chat.swift
-│   │   └── Message.swift
-│   ├── Migrations/        # Database migrations
-│   ├── Services/          # External services
-│   │   ├── Auth0Config.swift
-│   │   └── FoundationModelsClient.swift
-│   ├── DTOs/              # Data transfer objects
-│   ├── configure.swift    # App configuration
-│   ├── routes.swift       # Route definitions
-│   └── entrypoint.swift   # App entry point
-├── Resources/Views/       # Leaf templates
-├── Public/                # Static assets
-│   ├── css/
-│   └── js/
-└── Tests/
-```
-
-### Running Tests
-
-```bash
-swift test
-```
-
-### Database
-
-By default, Perspective Web uses SQLite stored in `db.sqlite`. The database is automatically migrated on startup.
-
-To reset the database:
-```bash
-rm db.sqlite
-swift run
-```
-
-## Deployment
-
-### Docker
-
-```bash
-docker build -t perspective-web .
-docker run -p 8080:8080 --env-file .env perspective-web
-```
-
-### Docker Compose
-
-```bash
-docker-compose up -d
-```
-
-## Accessibility
-
-Perspective Web is designed with accessibility as a core requirement:
-
-- Full keyboard navigation (Tab, Enter, Space, Escape)
-- Screen reader compatible with proper ARIA labels
-- Dynamic Type support
-- Reduced motion support
-- High contrast colors
-- Minimum 44x44pt touch targets
+Open http://localhost:3000, create an account, and start chatting.
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `AUTH0_DOMAIN` | Your Auth0 tenant domain | Required |
-| `AUTH0_CLIENT_ID` | Auth0 application client ID | Required |
-| `AUTH0_CLIENT_SECRET` | Auth0 application client secret | Required |
-| `AUTH0_CALLBACK_URL` | OAuth callback URL | `http://localhost:8080/auth/callback` |
-| `AUTH0_LOGOUT_URL` | Post-logout redirect URL | `http://localhost:8080` |
-| `FOUNDATION_MODELS_URL` | URL of the Foundation Models API | `http://localhost:8081` |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | Yes | Random secret for session encryption |
+| `AUTH_TRUST_HOST` | Yes | Set to `true` for multi-host access |
+| `AI_SERVER_URL` | Yes | Perspective Intelligence Server URL (default: `http://localhost:11434`) |
+| `AUTH_APPLE_ID` | No | Apple OAuth client ID |
+| `AUTH_APPLE_SECRET` | No | Apple OAuth client secret |
+| `AWS_ACCESS_KEY_ID` | No | For password reset emails via SES |
+
+## Architecture
+
+```
+Browser <-> Next.js App (Auth, UI, API) <-> Perspective Intelligence Server (Foundation Models)
+                |
+           PostgreSQL
+```
+
+- **Next.js 16** App Router with TypeScript
+- **Auth.js v5** (JWT sessions, Credentials + optional Apple OAuth)
+- **Drizzle ORM** with Neon PostgreSQL
+- **SSE streaming** for real-time AI responses
+- **Tailwind CSS v4** dark theme
+
+## Accessibility
+
+Built with accessibility as a core requirement:
+
+- Full keyboard navigation with visible focus indicators
+- Screen reader compatible with ARIA labels and live regions
+- Reduced motion support
+- Minimum 44px touch targets
+- Semantic HTML throughout
 
 ## License
 
-MIT License - See LICENSE file for details.
+MIT License

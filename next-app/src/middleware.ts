@@ -1,62 +1,43 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 
-function isValidJwtStructure(token: string): boolean {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return false;
+const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/reset-password"];
 
-    const payload = JSON.parse(
-      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
-    );
-    if (typeof payload.exp === "number" && payload.exp * 1000 < Date.now()) {
-      return false;
-    }
-
-    return true;
-  } catch {
-    return false;
-  }
+function isPublicPath(pathname: string): boolean {
+  return publicPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
-const publicPaths = ["/", "/login", "/signup"];
+function buildUrl(request: Request, path: string, query?: string): string {
+  const host = request.headers.get("host") || "localhost:3000";
+  const proto = request.headers.get("x-forwarded-proto") || "http";
+  const url = `${proto}://${host}${path}`;
+  return query ? `${url}?${query}` : url;
+}
 
-const alwaysAllowedPaths = ["/_next", "/favicon.ico", "/api"];
+export default auth((req) => {
+  const isLoggedIn = !!req.auth?.user;
+  const pathname = req.nextUrl.pathname;
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (alwaysAllowedPaths.some((path) => pathname.startsWith(path))) {
-    return NextResponse.next();
+  // Redirect logged-in users away from root to /chat
+  if (pathname === "/" && isLoggedIn) {
+    return NextResponse.redirect(buildUrl(req, "/chat"));
   }
 
-  if (
-    publicPaths.some(
-      (path) => pathname === path || pathname.startsWith(path + "/")
-    )
-  ) {
-    if (pathname === "/") {
-      const authSession = request.cookies.get("__session");
-      if (authSession && isValidJwtStructure(authSession.value)) {
-        return NextResponse.redirect(new URL("/chat", request.url));
-      }
-    }
-    return NextResponse.next();
-  }
+  // Public paths — allow everyone
+  if (isPublicPath(pathname)) return NextResponse.next();
 
-  const authSession = request.cookies.get("__session");
-
-  if (!authSession || !isValidJwtStructure(authSession.value)) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+  // Protected routes — redirect to login
+  if (!isLoggedIn) {
+    return NextResponse.redirect(
+      buildUrl(req, "/login", `redirect=${encodeURIComponent(pathname)}`)
+    );
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!_next/static|_next/image|favicon.ico|public|api/auth).*)",
   ],
 };

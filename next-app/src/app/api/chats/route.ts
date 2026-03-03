@@ -3,8 +3,8 @@ import { authenticateRequest, isAuthError } from "@/lib/auth/authenticate";
 import { db, chats, messages } from "@/lib/db";
 import { eq, desc, sql } from "drizzle-orm";
 
-export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+export async function GET() {
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   const userChats = await db
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (isAuthError(auth)) return auth;
 
   let title = "New Chat";

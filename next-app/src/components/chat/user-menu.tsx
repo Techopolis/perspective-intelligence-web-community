@@ -30,9 +30,9 @@ export function UserMenu({
   const menuItemsRef = useRef<HTMLElement[]>([]);
 
   const displayName =
-    dbUser?.name || user?.displayName || user?.email || "User";
+    dbUser?.name || user?.name || user?.email || "User";
   const email = dbUser?.email || user?.email || "";
-  const pictureUrl = dbUser?.pictureUrl || null;
+  const pictureUrl = dbUser?.pictureUrl || user?.image || null;
   const initials = getInitials(displayName);
 
   const closeMenu = useCallback(() => {
