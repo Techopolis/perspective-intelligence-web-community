@@ -16,7 +16,7 @@ All you need is one Mac with Apple Silicon running [Perspective Server](https://
 - Email/password authentication
 - Optional Apple Sign-In
 - Password reset via email (optional)
-- Fully accessible, built for everyone
+- More coming soon (custom agents, and more)
 
 ## You Need the Server
 
@@ -80,14 +80,6 @@ Browser <-> Next.js App (Auth, UI, API) <-> Perspective Server (Foundation Model
 - **Drizzle ORM** with Neon PostgreSQL
 - **SSE streaming** for real-time AI responses
 - **Tailwind CSS v4** dark theme
-
-## Built for Everyone
-
-- Full keyboard navigation with visible focus indicators
-- Screen reader support throughout
-- Reduced motion support
-- Large touch targets
-- Works however you use the web
 
 ## License
 
