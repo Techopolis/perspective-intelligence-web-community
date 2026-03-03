@@ -2,20 +2,20 @@
 
 Apple Intelligence does not have to be terrible. It actually works. You just need the right interface.
 
-Perspective Intelligence is a self-hosted AI chat app powered by Apple Foundation Models running on your own Mac. Private. Fast. No subscriptions. No cloud. No data leaving your machine.
+[Perspective Intelligence](https://apps.apple.com/kz/app/perspective-intelligence/id6448894750) is our AI chat app on the App Store. **Perspective Intelligence Web is the open-source web version.** It runs in any browser on any platform. Windows. Android. Linux. Chromebooks. Anything.
 
-This is the web frontend. Pair it with [Perspective Server](https://github.com/Techopolis/Perspective-Server) and you have a full AI chat system running entirely on hardware you own.
+All you need is one Mac with Apple Silicon running [Perspective Server](https://github.com/Techopolis/Perspective-Server) somewhere on your network. Every device in your home or office can connect to it and use Apple Foundation Models. No cloud. No data leaving your network. Just your Mac doing the work.
 
 ## Features
 
 - On-device AI chat via Apple Foundation Models
-- Email/password authentication (Auth.js v5)
-- Optional Apple Sign-In (OAuth)
 - 8 specialized AI agents (general, code, writer, summarizer, translator, creative, tutor, accessibility)
 - Auto-classifies conversations to the right agent
-- SSE streaming responses
-- Password reset via email (AWS SES, optional)
+- Streaming responses in real time
 - Dark theme, iMessage-style chat interface
+- Email/password authentication
+- Optional Apple Sign-In
+- Password reset via email (optional)
 - Fully accessible, built for everyone
 
 ## You Need the Server
