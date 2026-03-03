@@ -4,8 +4,6 @@ Apple Intelligence is powerful. Most people just do not have the right interface
 
 This is that interface. An open-source AI chat app that runs in any browser on any device. Windows. Android. Linux. Chromebooks. Anything. All powered by Apple Foundation Models running locally on your Mac.
 
-<!-- TODO: Add screenshot or demo GIF of the chat interface here -->
-<!-- ![Perspective Intelligence Web](screenshot.png) -->
 
 ## Why This Exists
 
