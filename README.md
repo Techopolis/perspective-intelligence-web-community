@@ -6,7 +6,6 @@ This is that interface. An open-source AI chat app that runs in any browser on a
 
 ![Perspective Intelligence Web chat interface running on Windows 11 through a browser. The dark-themed UI shows a sidebar with conversation history on the left, and the main chat area on the right with an iMessage-style layout. A user message reads give me an interesting fact and the Creative agent responds with a fact about honey never spoiling. The bottom of the screen has a message input field with at sign for agents placeholder text.](screenshot.png)
 
-
 ## Why This Exists
 
 We built [Perspective Intelligence](https://apps.apple.com/kz/app/perspective-intelligence/id6448894750) as a native Mac and iOS app. People loved it. But not everyone has a Mac in front of them all day.
@@ -39,10 +38,11 @@ The web app handles authentication and the chat UI. The AI runs on your Mac thro
 
 Download and run [Perspective Server](https://github.com/Techopolis/Perspective-Server/releases) on your Mac. It appears in your menu bar and starts automatically.
 
-### 2. Set Up the Web App
+### 2. Get the Code
 
 ```bash
-cd next-app
+git clone https://github.com/Techopolis/perspective-intelligence-web-community.git
+cd perspective-intelligence-web-community/next-app
 cp .env.local.example .env.local
 ```
 
