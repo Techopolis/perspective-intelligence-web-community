@@ -37,7 +37,7 @@ The web app handles authentication and the chat UI. The AI runs on your Mac thro
 Download and run [Perspective Server](https://github.com/Techopolis/Perspective-Server/releases) on your Mac first, then:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Techopolis/perspective-intelligence-web-community/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Techopolis/perspective-intelligence-web-community/main/scripts/install.sh | bash
 ```
 
 Edit `next-app/.env.local` with your `DATABASE_URL`, then:
@@ -53,6 +53,26 @@ Open http://localhost:3000, create an account, and start chatting.
 - A Mac with Apple Silicon running macOS 26+ (for Perspective Server)
 - PostgreSQL database (Neon free tier works)
 - Node.js 20+
+
+## Auto Update
+
+Pull the latest changes, install new dependencies, run migrations, and rebuild with one command:
+
+```bash
+bash scripts/update.sh
+```
+
+Set up automatic updates with cron (checks every hour):
+
+```bash
+0 * * * * cd /path/to/perspective-intelligence-web && bash scripts/update.sh --auto
+```
+
+If you use PM2, add `--restart` to automatically restart after updates:
+
+```bash
+0 * * * * cd /path/to/perspective-intelligence-web && bash scripts/update.sh --auto --restart
+```
 
 ## Environment Variables
 
