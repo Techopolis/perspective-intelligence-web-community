@@ -34,31 +34,13 @@ The web app handles authentication and the chat UI. The AI runs on your Mac thro
 
 ## Quick Start
 
-### 1. Start the Server
-
-Download and run [Perspective Server](https://github.com/Techopolis/Perspective-Server/releases) on your Mac. It appears in your menu bar and starts automatically.
-
-### 2. Get the Code
+Download and run [Perspective Server](https://github.com/Techopolis/Perspective-Server/releases) on your Mac first, then:
 
 ```bash
-git clone https://github.com/Techopolis/perspective-intelligence-web-community.git
-cd perspective-intelligence-web-community/next-app
-cp .env.local.example .env.local
+git clone https://github.com/Techopolis/perspective-intelligence-web-community.git && cd perspective-intelligence-web-community/next-app && cp .env.local.example .env.local && npm install && npx drizzle-kit push && npm run dev
 ```
 
-Edit `.env.local` with your database URL and generate a session secret:
-
-```bash
-openssl rand -base64 32
-```
-
-### 3. Install and Run
-
-```bash
-npm install
-npx drizzle-kit push
-npm run dev
-```
+Edit `next-app/.env.local` with your `DATABASE_URL` and `NEXTAUTH_SECRET` before running. Generate a secret with `openssl rand -base64 32`.
 
 Open http://localhost:3000, create an account, and start chatting.
 
