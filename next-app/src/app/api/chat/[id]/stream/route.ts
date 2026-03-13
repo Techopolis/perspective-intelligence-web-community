@@ -7,6 +7,7 @@ import {
   classify,
   systemPrompt,
 } from "@/lib/ai/client";
+import { buildContextMessages } from "@/lib/ai/context";
 
 export async function POST(
   request: NextRequest,
@@ -84,14 +85,16 @@ export async function POST(
       .where(eq(chats.id, id));
   }
 
-  // Build messages for Foundation Models
-  const aiMessages = [
-    { role: "system", content: systemPrompt(agentId) },
-    ...existingMessages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-  ];
+  // Build messages for Foundation Models with context summarization
+  const { aiMessages, summarized, newSummary, newAnchor } =
+    await buildContextMessages(
+      systemPrompt(agentId),
+      existingMessages,
+      {
+        runningSummary: chat.runningSummary,
+        contextResetAnchor: chat.contextResetAnchor,
+      }
+    );
 
   // Stream response as SSE
   const encoder = new TextEncoder();
@@ -134,10 +137,17 @@ export async function POST(
               });
             }
 
-            // Update chat timestamp
+            // Update chat timestamp and persist summary if needed
+            const chatUpdate: Record<string, unknown> = {
+              updatedAt: new Date(),
+            };
+            if (summarized && newSummary && newAnchor) {
+              chatUpdate.runningSummary = newSummary;
+              chatUpdate.contextResetAnchor = newAnchor;
+            }
             await db
               .update(chats)
-              .set({ updatedAt: new Date() })
+              .set(chatUpdate)
               .where(eq(chats.id, id));
 
             controller.enqueue(

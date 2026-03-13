@@ -80,6 +80,8 @@ export const chats = pgTable("chats", {
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull().default("New Chat"),
   agent: text("agent"),
+  runningSummary: text("running_summary"),
+  contextResetAnchor: timestamp("context_reset_anchor", { mode: "date" }),
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
   updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
 });
