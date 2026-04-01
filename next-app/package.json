@@ -10,9 +10,8 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
-    "@aws-sdk/client-ses": "^3.1000.0",
-    "@neondatabase/serverless": "^1.0.2",
     "bcryptjs": "^3.0.3",
+    "postgres": "^3.4.7",
     "drizzle-orm": "^0.45.1",
     "isomorphic-dompurify": "^3.0.0",
     "next": "16.1.6",

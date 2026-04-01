@@ -1,11 +1,10 @@
-import { neon, NeonQueryFunction } from "@neondatabase/serverless";
-import { drizzle, NeonHttpDatabase } from "drizzle-orm/neon-http";
+import postgres from "postgres";
+import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
 
-let sql: NeonQueryFunction<false, false> | null = null;
-let _db: NeonHttpDatabase<typeof schema> | null = null;
+let _db: PostgresJsDatabase<typeof schema> | null = null;
 
-export function getDb(): NeonHttpDatabase<typeof schema> {
+export function getDb(): PostgresJsDatabase<typeof schema> {
   if (!_db) {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
@@ -13,13 +12,13 @@ export function getDb(): NeonHttpDatabase<typeof schema> {
         "DATABASE_URL environment variable is not set. Please add it to your .env.local file."
       );
     }
-    sql = neon(connectionString);
-    _db = drizzle(sql, { schema });
+    const client = postgres(connectionString);
+    _db = drizzle(client, { schema });
   }
   return _db;
 }
 
-export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
+export const db = new Proxy({} as PostgresJsDatabase<typeof schema>, {
   get(_, prop) {
     const database = getDb();
     const value = database[prop as keyof typeof database];

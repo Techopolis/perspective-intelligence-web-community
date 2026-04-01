@@ -19,8 +19,7 @@ Your Mac is already running Apple Intelligence. It is sitting there with a power
 - Auto-classifies conversations to the right agent
 - Streaming responses in real time
 - Dark theme with iMessage-style chat interface
-- Email/password authentication with optional Apple Sign-In
-- Password reset via email
+- Email/password authentication
 
 ## How It Works
 
@@ -51,7 +50,7 @@ Open http://localhost:3000, create an account, and start chatting.
 ## Requirements
 
 - A Mac with Apple Silicon running macOS 26+ (for Perspective Server)
-- PostgreSQL database (Neon free tier works)
+- Any PostgreSQL database (local, Supabase, Railway, or any provider you prefer)
 - Node.js 20+
 
 ## Auto Update
@@ -82,15 +81,12 @@ If you use PM2, add `--restart` to automatically restart after updates:
 | `NEXTAUTH_SECRET` | Yes | Random secret for session encryption |
 | `AUTH_TRUST_HOST` | Yes | Set to `true` for multi-host access |
 | `AI_SERVER_URL` | Yes | Perspective Server URL (default: `http://localhost:11434`) |
-| `AUTH_APPLE_ID` | No | Apple OAuth client ID |
-| `AUTH_APPLE_SECRET` | No | Apple OAuth client secret |
-| `AWS_ACCESS_KEY_ID` | No | For password reset emails via SES |
 
 ## Tech Stack
 
 - **Next.js 16** with App Router and TypeScript
-- **Auth.js v5** (JWT sessions, Credentials + optional Apple OAuth)
-- **Drizzle ORM** with Neon PostgreSQL
+- **Auth.js v5** (JWT sessions, Credentials provider)
+- **Drizzle ORM** with standard PostgreSQL (postgres.js)
 - **SSE streaming** for real-time AI responses
 - **Tailwind CSS v4** dark theme
 

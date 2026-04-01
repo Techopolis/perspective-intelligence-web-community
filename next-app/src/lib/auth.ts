@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Apple from "next-auth/providers/apple";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
@@ -50,13 +49,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
 
-    // Apple OAuth — only enabled when env vars are present
-    ...(process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
-      ? [Apple({
-          clientId: process.env.AUTH_APPLE_ID,
-          clientSecret: process.env.AUTH_APPLE_SECRET,
-        })]
-      : []),
   ],
 
   callbacks: {
@@ -95,19 +87,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Route protection is handled in middleware.ts
   },
 
-  events: {
-    async createUser({ user }) {
-      // Send welcome email for OAuth sign-ups
-      if (user.email) {
-        try {
-          const { sendWelcomeEmail } = await import("@/lib/email/client");
-          sendWelcomeEmail(user.email, user.name || null).catch((err: unknown) =>
-            console.error("Failed to send welcome email:", err)
-          );
-        } catch {
-          // Email service not configured
-        }
-      }
-    },
-  },
 });
